@@ -1,0 +1,38 @@
+package com.example.weatherforcast.ui.components.homecomponents
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.example.weatherforcast.ui.theme.TextSizes
+import com.example.weatherforcast.ui.theme.TextWhite
+
+@Composable
+fun HourlyForecast() {
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 20.dp)) {
+        Text(
+            text = "Today",
+            color = TextWhite,
+            fontSize = TextSizes.large,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(bottom = 16.dp)
+        ) {
+            // In a real app, you would use items(forecastList)
+            items(10) { index ->
+                HourCard(
+                    time = "${8 + index}:00",
+                    degree = "${22 + index}"
+                )
+            }
+        }
+    }
+}
