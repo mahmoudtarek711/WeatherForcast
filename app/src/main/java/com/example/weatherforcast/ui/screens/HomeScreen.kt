@@ -1,6 +1,5 @@
 package com.example.weatherforcast.ui.screens
 
-import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,135 +14,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherforcast.model.*
 import com.example.weatherforcast.ui.components.*
+import com.example.weatherforcast.ui.components.homecomponents.DayInsights
+import com.example.weatherforcast.ui.components.homecomponents.ForecastCard
+import com.example.weatherforcast.ui.components.homecomponents.HomeHeader
+import com.example.weatherforcast.ui.components.homecomponents.HourlyForecast
+import com.example.weatherforcast.ui.theme.*
 
+@Preview(showBackground = true, showSystemUi = true)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen() {
-
-    var tempUnit by remember { mutableStateOf(TempUnit.C) }
-    var windUnit by remember { mutableStateOf(WindUnit.MS) }
-    var language by remember { mutableStateOf(Language.EN) }
-    var locationMode by remember { mutableStateOf(LocationMode.GPS) }
-    var selectedCity by remember { mutableStateOf("Cairo") }
-    var showCityPicker by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF2A4A62),
-                        Color(0xFF355872),
-                        Color(0xFF4A7A9B),
-                        Color(0xFF355872),
-                        Color(0xFF2A4A62)
-                    )
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().background(
+            Brush.horizontalGradient(
+                listOf(
+                    BlueSecondary,
+                    BlueAccent
                 )
             )
-            .padding(16.dp)
+        ).padding(16.dp)
     ) {
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            item {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { /* leave empty */ },
-                    contentPadding = PaddingValues(horizontal = 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Home")
-                    }
-                }
-            }
-
-            item {
-                SettingsSection(title = "Location") {
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ToggleCard("GPS", locationMode == LocationMode.GPS) {
-                            locationMode = LocationMode.GPS
-                        }
-
-                        ToggleCard("Manual", locationMode == LocationMode.MANUAL) {
-                            locationMode = LocationMode.MANUAL
-                        }
-                    }
-
-                    if (locationMode == LocationMode.MANUAL) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Button(
-                            onClick = { showCityPicker = true },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(selectedCity)
-                        }
-                    }
-                }
-            }
-
-            item {
-                SettingsSection(title = "Temperature Unit") {
-                    TempUnit.values().forEach {
-                        OptionRow(it.name, tempUnit == it) {
-                            tempUnit = it
-                        }
-                    }
-                }
-            }
-
-            item { SettingsSection(title = "Wind Speed") {
-                WindUnit.values().forEach {
-                    OptionRow(it.name, windUnit == it) {
-                        windUnit = it
-                    }
-                }
-            } }
-
-            item {
-                SettingsSection(title = "Language") {
-                    Language.values().forEach {
-                        OptionRow(it.name, language == it) {
-                            language = it
-                        }
-                    }
-                }
+        item {
+            HomeHeader()
+        }
+        item {
+            DayInsights()
+        }
+        item {
+            SettingsSection("Hourly Rate") {
+                HourlyForecast()
             }
         }
-
-        if (showCityPicker) {
-            ModalBottomSheet(
-                onDismissRequest = { showCityPicker = false }
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    listOf("Cairo", "London", "Paris", "Tokyo")
-                        .forEach { city ->
-                            Text(
-                                text = city,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp)
-                                    .clickable {
-                                        selectedCity = city
-                                        showCityPicker = false
-                                    }
-                            )
-                        }
-                }
-            }
+        item {
+                ForecastCard()
         }
+
     }
 }
