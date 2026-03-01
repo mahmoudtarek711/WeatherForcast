@@ -9,12 +9,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.weatherforcast.model.uiutils.HourWeather
 import com.example.weatherforcast.ui.theme.TextSizes
 import com.example.weatherforcast.ui.theme.TextWhite
 
 @Composable
-fun HourlyForecast() {
-    Column(modifier = Modifier.fillMaxWidth().padding(top = 20.dp)) {
+fun HourlyForecast(hours: List<HourWeather>) {
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 20.dp)
+    ) {
+
         Text(
             text = "Today",
             color = TextWhite,
@@ -26,11 +33,14 @@ fun HourlyForecast() {
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            // In a real app, you would use items(forecastList)
-            items(10) { index ->
+
+            items(hours.size) { index ->
+
+                val hour = hours[index]
+
                 HourCard(
-                    time = "${8 + index}:00",
-                    degree = "${22 + index}"
+                    time = hour.time,
+                    degree = hour.degree
                 )
             }
         }

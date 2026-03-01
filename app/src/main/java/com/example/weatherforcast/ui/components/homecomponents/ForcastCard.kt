@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.weatherforcast.model.uiutils.DayForecast
 import com.example.weatherforcast.ui.theme.GlassStroke
 import com.example.weatherforcast.ui.theme.GlassWhite
 import com.example.weatherforcast.ui.theme.GreyLight
@@ -29,7 +30,7 @@ import com.example.weatherforcast.ui.theme.TextSizes
 import com.example.weatherforcast.ui.theme.TextWhite
 
 @Composable
-fun ForecastCard() {
+fun ForecastCard(days: List<DayForecast>) {
     Column(modifier = Modifier.padding(top = 24.dp)) {
         Text(
             text = "7-Day Forecast",
@@ -47,15 +48,13 @@ fun ForecastCard() {
             // Using Column + forEach because 7 items is small and avoids
             // nested scrolling issues inside the HomeScreen LazyColumn
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                val days = listOf("Today", "Tomorrow", "Sat", "Sun", "Mon", "Tue", "Wed")
-
                 days.forEachIndexed { index, day ->
                     ForecastRow(
-                        day = day,
-                        date = "Oct ${26 + index}",
-                        status = "Cloudy",
-                        highTemp = "24",
-                        lowTemp = "18"
+                        day = day.day,
+                        date = day.date,
+                        status = day.status,
+                        highTemp = day.highTemp,
+                        lowTemp = day.lowTemp
                     )
 
                     if (index < days.size - 1) {
