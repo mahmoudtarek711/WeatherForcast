@@ -40,7 +40,14 @@ import com.example.weatherforcast.ui.theme.TextWhite
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun DayInsights(temprature: String = "22",desc: String = "Partly Cloudy",feels_like: String = "20")
+fun DayInsights(
+    temprature: String = "22",
+    desc: String = "Partly Cloudy",
+    feels_like: String = "20",
+    humidity: String = "0",
+    wind: String = "0",
+    pressure: String = "0",
+    clouds: String = "0")
 {
     Card(modifier = Modifier
         .fillMaxWidth().fillMaxHeight() // Changed from fillMaxSize to fit nicely in a list
@@ -90,11 +97,10 @@ fun DayInsights(temprature: String = "22",desc: String = "Partly Cloudy",feels_l
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                InsightsCard("Cloud", "42", Modifier.weight(1f))
-                InsightsCard("Humid", "60", Modifier.weight(1f))
-                InsightsCard("Wind", "12", Modifier.weight(1f))
-                InsightsCard("UV", "1", Modifier.weight(1f))
-            }
+                InsightsCard("Humidity", humidity, Modifier.weight(1f))
+                InsightsCard("Wind", wind, Modifier.weight(1f))
+                InsightsCard("Pressure", pressure, Modifier.weight(1f))
+                InsightsCard("Clouds", clouds, Modifier.weight(1f))}
         }
          }
     }

@@ -18,17 +18,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherforcast.model.*
+import com.example.weatherforcast.model.Response.ForecastResponse
 import com.example.weatherforcast.ui.components.*
 import com.example.weatherforcast.ui.components.homecomponents.DayInsights
 import com.example.weatherforcast.ui.components.homecomponents.ForecastCard
 import com.example.weatherforcast.ui.components.homecomponents.HomeHeader
 import com.example.weatherforcast.ui.components.homecomponents.HourlyForecast
 import com.example.weatherforcast.ui.theme.*
+import com.example.weatherforcast.utils.extractFiveDaysForecast
+import com.example.weatherforcast.utils.extractTodayHours
+import com.example.weatherforcast.utils.kelvinToCelsius
 
-@Preview(showBackground = true, showSystemUi = true)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(forcastResponse: ForecastResponse) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(
             Brush.horizontalGradient(
@@ -41,18 +45,41 @@ fun HomeScreen() {
     ) {
 
         item {
-            HomeHeader()
+            HomeHeader(city = forcastResponse.city.name)
         }
         item {
-            DayInsights()
+            val weather = forcastResponse.list[0]
+
+            val temperature = kelvinToCelsius(weather.main.temp)
+            val feelsLike = kelvinToCelsius(weather.main.feels_like)
+            val description = weather.weather[0].description
+
+            val humidity = "${weather.main.humidity}%"
+            val pressure = "${weather.main.pressure} hPa"
+            val wind = "${weather.wind.speed} m/s"
+            val clouds = "${weather.clouds.all}%"
+
+            DayInsights(
+                temprature = temperature,
+                desc = description,
+                feels_like = feelsLike,
+                humidity = humidity,
+                wind = wind,
+                pressure = pressure,
+                clouds = clouds
+            )
         }
         item {
             SettingsSection("Hourly Rate") {
-                HourlyForecast()
+                val todayHours = extractTodayHours(forcastResponse.list)
+
+                HourlyForecast(todayHours)
             }
         }
         item {
-                ForecastCard()
+            val daysForecast = extractFiveDaysForecast(forcastResponse.list)
+
+            ForecastCard(daysForecast)
         }
 
     }
