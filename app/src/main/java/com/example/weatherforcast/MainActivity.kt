@@ -3,14 +3,12 @@ package com.example.weatherforcast
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -26,20 +24,14 @@ import com.example.architechturestartercode.data.db.AppDatabase
 import com.example.architechturestartercode.data.movie.datasource.local.ForcastLocalDataSource
 import com.example.architechturestartercode.data.movie.datasource.remote.ForcastRemoteDataSource
 import com.example.architechturestartercode.data.movie.repository.ForcastRepository
-import com.example.weatherforcast.model.AlertItem
-import com.example.weatherforcast.model.Response.ForecastResponse
 import com.example.weatherforcast.routes.Screen
 import com.example.weatherforcast.ui.screens.*
 import com.example.weatherforcast.ui.theme.*
 import com.example.weatherforcast.ui.theme.WeatherForcastTheme
 import com.example.weatherforcast.ui.viewmodels.AlertsViewModel
-import com.example.weatherforcast.utils.loadJsonFromAssets
-import com.google.gson.Gson
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import androidx.compose.runtime.*
 import com.example.weatherforcast.data.local.SettingsManager
+import com.example.weatherforcast.ui.viewmodels.HomeViewModel
 import com.example.weatherforcast.viewmodels.SettingsViewModel
 
 class MainActivity : ComponentActivity() {
@@ -77,20 +69,18 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 )
+                // 4. Home ViewModel
+                val homeViewModel: HomeViewModel = viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            return HomeViewModel(repo, settingsManager) as T
+                        }
+                    }
+                )
 
                 val navController = rememberNavController()
                 val items = listOf(Screen.Home, Screen.Favorites, Screen.Alerts, Screen.Settings)
-                var forecastState by remember { mutableStateOf<ForecastResponse?>(null) }
 
-                LaunchedEffect(Unit) {
-                    try {
-                        val liveData = repo.getRemoteForecast(46.23, 2.21, "76c0ba629d316a5c11c0ead182aefac9")
-                        forecastState = liveData
-                    } catch (e: Exception) {
-                        val json = loadJsonFromAssets(this@MainActivity)
-                        forecastState = Gson().fromJson(json, ForecastResponse::class.java)
-                    }
-                }
 
                 Scaffold(
                     bottomBar = {
@@ -121,7 +111,19 @@ class MainActivity : ComponentActivity() {
                     }
                 ) { innerPadding ->
                     NavHost(navController, Screen.Home.route, Modifier.padding(innerPadding)) {
-                        composable(Screen.Home.route) { forecastState?.let { HomeScreen(it) } }
+                        composable(Screen.Home.route) {
+                            val forecast by homeViewModel.forecastState.collectAsState()
+                            val settings by homeViewModel.settings.collectAsState()
+
+                            if (forecast != null && settings != null) {
+                                HomeScreen(forecast!!, settings!!)
+                            } else {
+                                // Show a loading spinner here
+                                Box(Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                                    CircularProgressIndicator(color = Color.White)
+                                }
+                            }
+                        }
                         composable(Screen.Favorites.route) { FavoritesScreen() }
                         composable(Screen.Alerts.route) { AlertsScreen(viewModel = alertsViewModel) }
                         composable(Screen.Settings.route) { SettingsScreen(viewModel = settingsViewModel) }
