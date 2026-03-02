@@ -1,144 +1,189 @@
 package com.example.weatherforcast.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.weatherforcast.model.*
-import com.example.weatherforcast.ui.components.*
+import com.example.weatherforcast.model.AlertItem
+import com.example.weatherforcast.ui.components.alertscomponents.AddAlertBottomSheet
+import com.example.weatherforcast.ui.theme.*
+import com.example.weatherforcast.ui.viewmodels.AlertsViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlertsScreen() {
+fun AlertsScreen(viewModel: AlertsViewModel) {
+    var showSheet by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-    var tempUnit by remember { mutableStateOf(TempUnit.C) }
-    var windUnit by remember { mutableStateOf(WindUnit.MS) }
-    var language by remember { mutableStateOf(Language.EN) }
-    var locationMode by remember { mutableStateOf(LocationMode.GPS) }
-    var selectedCity by remember { mutableStateOf("Cairo") }
-    var showCityPicker by remember { mutableStateOf(false) }
+    // Collecting StateFlow from ViewModel correctly
+    val alerts by viewModel.alerts.collectAsState()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF2A4A62),
-                        Color(0xFF355872),
-                        Color(0xFF4A7A9B),
-                        Color(0xFF355872),
-                        Color(0xFF2A4A62)
-                    )
-                )
-            )
-            .padding(16.dp)
-    ) {
+    val backgroundGradient = Brush.verticalGradient(
+        colors = listOf(BlueDark, BluePrimary, BlueSecondary)
+    )
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            item {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { /* leave empty */ },
-                    contentPadding = PaddingValues(horizontal = 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Alerts")
-                    }
-                }
-            }
-
-            item {
-                SettingsSection(title = "Location") {
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ToggleCard("GPS", locationMode == LocationMode.GPS) {
-                            locationMode = LocationMode.GPS
-                        }
-
-                        ToggleCard("Manual", locationMode == LocationMode.MANUAL) {
-                            locationMode = LocationMode.MANUAL
-                        }
-                    }
-
-                    if (locationMode == LocationMode.MANUAL) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Button(
-                            onClick = { showCityPicker = true },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(selectedCity)
-                        }
-                    }
-                }
-            }
-
-            item {
-                SettingsSection(title = "Temperature Unit") {
-                    TempUnit.values().forEach {
-                        OptionRow(it.name, tempUnit == it) {
-                            tempUnit = it
-                        }
-                    }
-                }
-            }
-
-            item { SettingsSection(title = "Wind Speed") {
-                WindUnit.values().forEach {
-                    OptionRow(it.name, windUnit == it) {
-                        windUnit = it
-                    }
-                }
-            } }
-
-            item {
-                SettingsSection(title = "Language") {
-                    Language.values().forEach {
-                        OptionRow(it.name, language == it) {
-                            language = it
-                        }
-                    }
-                }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color.Transparent,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showSheet = true },
+                containerColor = BlueAccent,
+                contentColor = TextWhite
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Alert")
             }
         }
-
-        if (showCityPicker) {
-            ModalBottomSheet(
-                onDismissRequest = { showCityPicker = false }
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    listOf("Cairo", "London", "Paris", "Tokyo")
-                        .forEach { city ->
-                            Text(
-                                text = city,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp)
-                                    .clickable {
-                                        selectedCity = city
-                                        showCityPicker = false
-                                    }
-                            )
-                        }
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundGradient)
+                .padding(padding)
+        ) {
+            if (alerts.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "No alerts set",
+                        color = TextLightGrey,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                 }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(
+                        items = alerts,
+                        key = { it.id } // Use the Room ID as the key for stable animations
+                    ) { alert ->
+                        val dismissState = rememberSwipeToDismissBoxState(
+                            confirmValueChange = { dismissValue ->
+                                if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
+                                    val alertToDelete = alert
+                                    viewModel.removeAlert(alertToDelete)
+
+                                    scope.launch {
+                                        val result = snackbarHostState.showSnackbar(
+                                            message = "Alert removed",
+                                            actionLabel = "Undo",
+                                            duration = SnackbarDuration.Short
+                                        )
+                                        if (result == SnackbarResult.ActionPerformed) {
+                                            viewModel.restoreAlert(alertToDelete)
+                                        }
+                                    }
+                                    true
+                                } else {
+                                    false
+                                }
+                            }
+                        )
+
+                        SwipeToDismissBox(
+                            state = dismissState,
+                            enableDismissFromStartToEnd = false,
+                            backgroundContent = {
+                                val color = if (dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
+                                    ErrorRed.copy(alpha = 0.8f)
+                                } else Color.Transparent
+
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(color, MaterialTheme.shapes.large)
+                                        .padding(horizontal = 20.dp),
+                                    contentAlignment = Alignment.CenterEnd
+                                ) {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        tint = Color.White
+                                    )
+                                }
+                            }
+                        ) {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                color = GlassWhite,
+                                shape = MaterialTheme.shapes.large,
+                                border = BorderStroke(1.dp, GlassStroke)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(20.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .background(GlassWhiteLight, MaterialTheme.shapes.medium),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = if (alert.isAlarm) Icons.Default.Alarm else Icons.Default.Notifications,
+                                            contentDescription = null,
+                                            tint = RainTeal,
+                                            modifier = Modifier.size(28.dp)
+                                        )
+                                    }
+
+                                    Spacer(Modifier.width(16.dp))
+
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "Active Period",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = TextLightGrey
+                                        )
+                                        Spacer(Modifier.height(4.dp))
+                                        Text(
+                                            text = "${alert.fromHour}:${alert.fromMinute.toString().padStart(2, '0')} — ${alert.toHour}:${alert.toMinute.toString().padStart(2, '0')}",
+                                            style = MaterialTheme.typography.headlineSmall,
+                                            color = TextWhite
+                                        )
+                                        Text(
+                                            text = if (alert.isAlarm) "Alarm Mode" else "Notification Mode",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = TextLightGrey.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (showSheet) {
+                AddAlertBottomSheet(
+                    onCancel = { showSheet = false },
+                    onAdd = { alert ->
+                        viewModel.addAlert(alert)
+                        showSheet = false
+                    }
+                )
             }
         }
     }

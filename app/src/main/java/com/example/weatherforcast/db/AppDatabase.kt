@@ -7,12 +7,15 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.architechturestartercode.data.movie.datasource.local.ForcastDao
 import com.example.weatherforcast.data.db.Converters
+import com.example.weatherforcast.datasource.local.AlertsDao
+import com.example.weatherforcast.model.AlertItem
 import com.example.weatherforcast.model.Response.ForecastItem
 
-@Database(entities = [ForecastItem::class], version = 1)
+@Database(entities = [ForecastItem::class, AlertItem::class], version = 2) // Increase version
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun moviesDao(): ForcastDao
+    abstract fun alertsDao(): AlertsDao // Add this
 
     companion object {
         @Volatile
@@ -24,11 +27,12 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "forecast_db"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration() // Use this if you don't mind clearing old data
+                    .build()
                 INSTANCE = instance
                 instance
             }
         }
     }
 }
-

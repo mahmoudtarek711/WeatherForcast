@@ -1,123 +1,88 @@
 package com.example.weatherforcast.ui.screens
 
-import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.materialIcon
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.weatherforcast.model.*
 import com.example.weatherforcast.ui.components.*
+import com.example.weatherforcast.ui.theme.*
+import com.example.weatherforcast.viewmodels.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen() {
-
-    var tempUnit by remember { mutableStateOf(TempUnit.C) }
-    var windUnit by remember { mutableStateOf(WindUnit.MS) }
-    var language by remember { mutableStateOf(Language.EN) }
-    var locationMode by remember { mutableStateOf(LocationMode.GPS) }
-    var selectedCity by remember { mutableStateOf("Cairo") }
+fun SettingsScreen(viewModel: SettingsViewModel) {
+    val settings by viewModel.settingsState.collectAsState()
     var showCityPicker by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF2A4A62),
-                        Color(0xFF355872),
-                        Color(0xFF4A7A9B),
-                        Color(0xFF355872),
-                        Color(0xFF2A4A62)
-                    )
-                )
-            )
-            .padding(16.dp)
-    ) {
+    val backgroundGradient = Brush.verticalGradient(
+        colors = listOf(BlueDark, BluePrimary, BlueSecondary)
+    )
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Box(modifier = Modifier.fillMaxSize().background(backgroundGradient)) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
             item {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { /* leave empty */ },
-                    contentPadding = PaddingValues(horizontal = 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Back")
-                    }
-                }
+                Text("Settings", style = MaterialTheme.typography.headlineMedium, color = TextWhite)
             }
 
+            // Location Settings
             item {
                 SettingsSection(title = "Location") {
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ToggleCard("GPS", locationMode == LocationMode.GPS) {
-                            locationMode = LocationMode.GPS
-                        }
-
-                        ToggleCard("Manual", locationMode == LocationMode.MANUAL) {
-                            locationMode = LocationMode.MANUAL
+                    LocationMode.values().forEach { mode ->
+                        OptionRow(mode.name, settings.locationMode == mode) {
+                            viewModel.updateLocationMode(mode)
                         }
                     }
-
-                    if (locationMode == LocationMode.MANUAL) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Button(
+                    if (settings.locationMode == LocationMode.MANUAL) {
+                        OutlinedButton(
                             onClick = { showCityPicker = true },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
                         ) {
-                            Text(selectedCity)
+                            Text("City: ${settings.selectedCity}", color = TextWhite)
                         }
                     }
                 }
             }
 
+            // Temperature Unit
             item {
                 SettingsSection(title = "Temperature Unit") {
-                    TempUnit.values().forEach {
-                        OptionRow(it.name, tempUnit == it) {
-                            tempUnit = it
+                    TempUnit.values().forEach { unit ->
+                        OptionRow(unit.name, settings.tempUnit == unit) {
+                            viewModel.updateTempUnit(unit)
                         }
                     }
                 }
             }
 
-            item { SettingsSection(title = "Wind Speed") {
-                WindUnit.values().forEach {
-                    OptionRow(it.name, windUnit == it) {
-                        windUnit = it
+            // Wind Speed Unit
+            item {
+                SettingsSection(title = "Wind Speed") {
+                    WindUnit.values().forEach { unit ->
+                        OptionRow(unit.name, settings.windUnit == unit) {
+                            viewModel.updateWindUnit(unit)
+                        }
                     }
                 }
-            } }
+            }
 
+            // Language
             item {
                 SettingsSection(title = "Language") {
-                    Language.values().forEach {
-                        OptionRow(it.name, language == it) {
-                            language = it
+                    Language.values().forEach { lang ->
+                        OptionRow(lang.name, settings.language == lang) {
+                            viewModel.updateLanguage(lang)
                         }
                     }
                 }
@@ -125,23 +90,17 @@ fun SettingsScreen() {
         }
 
         if (showCityPicker) {
-            ModalBottomSheet(
-                onDismissRequest = { showCityPicker = false }
-            ) {
+            ModalBottomSheet(onDismissRequest = { showCityPicker = false }) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    listOf("Cairo", "London", "Paris", "Tokyo")
-                        .forEach { city ->
-                            Text(
-                                text = city,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp)
-                                    .clickable {
-                                        selectedCity = city
-                                        showCityPicker = false
-                                    }
-                            )
-                        }
+                    listOf("Cairo", "London", "Paris", "Tokyo").forEach { city ->
+                        Text(
+                            text = city,
+                            modifier = Modifier.fillMaxWidth().padding(12.dp).clickable {
+                                viewModel.updateCity(city)
+                                showCityPicker = false
+                            }
+                        )
+                    }
                 }
             }
         }
