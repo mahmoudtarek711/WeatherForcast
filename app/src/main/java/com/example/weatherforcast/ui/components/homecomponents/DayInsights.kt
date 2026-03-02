@@ -72,7 +72,7 @@ fun DayInsights(
                 tint = RainTeal,
                 modifier = Modifier.size(60.dp).align(Alignment.CenterHorizontally)
             )
-            Text(text = temprature+"°C", fontSize = TextSizes.xxxLarge, color = TextWhite)
+            Text(text = temprature, fontSize = TextSizes.xxxLarge, color = TextWhite)
             Text(text = desc, fontSize = TextSizes.xLarge, color = TextWhite)
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -86,7 +86,7 @@ fun DayInsights(
 
                 Spacer(modifier = Modifier.width(8.dp)) // Adds space between icon and text
 
-                Text(text = "Feels Like $feels_like C", fontSize = TextSizes.medium, color = RainTeal)
+                Text(text = "Feels Like $feels_like", fontSize = TextSizes.medium, color = RainTeal)
 
             }
             HorizontalDivider(

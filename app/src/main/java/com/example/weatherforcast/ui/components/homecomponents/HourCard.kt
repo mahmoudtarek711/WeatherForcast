@@ -60,7 +60,7 @@ fun HourCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(text = "$degree°", fontSize = TextSizes.medium, color = TextWhite)
+            Text(text = "$degree", fontSize = TextSizes.medium, color = TextWhite)
         }
     }
 }

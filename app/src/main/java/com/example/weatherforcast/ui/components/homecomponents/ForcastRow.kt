@@ -59,9 +59,9 @@ fun ForecastRow(
 
         // 3. Temperature Range
         Row {
-            Text(text = "$highTemp°", fontSize = TextSizes.medium, color = TextWhite)
+            Text(text = "$highTemp", fontSize = TextSizes.medium, color = TextWhite)
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "$lowTemp°", fontSize = TextSizes.medium, color = GreyLight)
+            Text(text = "$lowTemp", fontSize = TextSizes.medium, color = GreyLight)
         }
     }
 }
