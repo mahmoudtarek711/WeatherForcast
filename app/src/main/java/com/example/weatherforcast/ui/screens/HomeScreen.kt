@@ -43,48 +43,40 @@ fun HomeScreen(
         item {
             HomeHeader(city = forcastResponse.city.name)
         }
+        // ... inside your LazyColumn item
         item {
             val weather = forcastResponse.list[0]
             val description = weather.weather[0].description
 
-            // 1. Unified Temperature Conversion Logic
-            val formattedTemp: String
-            val formattedFeelsLike: String
-
-            when (settings.tempUnit) {
-                TempUnit.C -> {
-                    formattedTemp = "${kelvinToCelsius(weather.main.temp)}°C"
-                    formattedFeelsLike = "${kelvinToCelsius(weather.main.feels_like)}°C"
-                }
-                TempUnit.F -> {
-                    formattedTemp = "${kelvinToFahrenheit(weather.main.temp)}°F"
-                    formattedFeelsLike = "${kelvinToFahrenheit(weather.main.feels_like)}°F"
-                }
-                TempUnit.K -> {
-                    formattedTemp = "${weather.main.temp.toInt()}K"
-                    formattedFeelsLike = "${weather.main.feels_like.toInt()}K"
-                }
+            val formattedTemp = when (settings.tempUnit) {
+                TempUnit.C -> "${kelvinToCelsius(weather.main.temp)}°C"
+                TempUnit.F -> "${kelvinToFahrenheit(weather.main.temp)}°F"
+                TempUnit.K -> "${weather.main.temp.toInt()}K"
             }
 
-            // 2. Dynamic Wind Conversion
+            val formattedFeelsLike = when (settings.tempUnit) {
+                TempUnit.C -> "${kelvinToCelsius(weather.main.feels_like)}°C"
+                TempUnit.F -> "${kelvinToFahrenheit(weather.main.feels_like)}°F"
+                TempUnit.K -> "${weather.main.feels_like.toInt()}K"
+            }
+
+            // Simplify this: No cast needed, and ensure it's a clean expression
             val formattedWind = if (settings.windUnit == WindUnit.MPH) {
                 "${(weather.wind.speed * 2.237).toInt()} mph"
-
             } else {
                 "${weather.wind.speed} m/s"
             }
 
-            // 3. Other Data
             val humidity = "${weather.main.humidity}%"
             val pressure = "${weather.main.pressure} hPa"
             val clouds = "${weather.clouds.all}%"
 
             DayInsights(
-                temprature = formattedTemp,      // Pass the String with Unit
-                feels_like = formattedFeelsLike, // Pass the String with Unit
+                temprature = formattedTemp,
+                feels_like = formattedFeelsLike,
                 desc = description,
                 humidity = humidity,
-                wind = formattedWind as String,            // Pass the String with Unit
+                wind = formattedWind, // REMOVED 'as String'
                 pressure = pressure,
                 clouds = clouds
             )

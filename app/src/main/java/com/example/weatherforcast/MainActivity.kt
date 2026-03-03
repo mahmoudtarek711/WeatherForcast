@@ -1,16 +1,24 @@
 package com.example.weatherforcast
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -24,26 +32,40 @@ import com.example.architechturestartercode.data.db.AppDatabase
 import com.example.architechturestartercode.data.movie.datasource.local.ForcastLocalDataSource
 import com.example.architechturestartercode.data.movie.datasource.remote.ForcastRemoteDataSource
 import com.example.architechturestartercode.data.movie.repository.ForcastRepository
+import com.example.weatherforcast.data.local.SettingsManager
 import com.example.weatherforcast.routes.Screen
 import com.example.weatherforcast.ui.screens.*
 import com.example.weatherforcast.ui.theme.*
-import com.example.weatherforcast.ui.theme.WeatherForcastTheme
 import com.example.weatherforcast.ui.viewmodels.AlertsViewModel
-import androidx.compose.runtime.*
-import com.example.weatherforcast.data.local.SettingsManager
 import com.example.weatherforcast.ui.viewmodels.HomeViewModel
 import com.example.weatherforcast.viewmodels.SettingsViewModel
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+
+    // 1. State to track if permission was denied to trigger the snackbar
+    private val showPermissionSnackbar = mutableStateOf(false)
+
+    // 2. Launcher to request POST_NOTIFICATIONS (Android 13+)
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (!isGranted) {
+            showPermissionSnackbar.value = true
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Check permission immediately on start
+        checkNotificationPermission()
+
         setContent {
             WeatherForcastTheme {
-                // 1. Setup Dependencies
+                // --- Dependencies Setup ---
                 val database = AppDatabase.getInstance(this)
                 val settingsManager = remember { SettingsManager(this) }
-
                 val repo = remember {
                     ForcastRepository(
                         ForcastRemoteDataSource(),
@@ -52,16 +74,15 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                // 2. Initialize AlertsViewModel
+                // --- ViewModel Initializations (Factories) ---
                 val alertsViewModel: AlertsViewModel = viewModel(
                     factory = object : ViewModelProvider.Factory {
                         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                            return AlertsViewModel(repo) as T
+                            return AlertsViewModel(application, repo) as T
                         }
                     }
                 )
 
-                // 3. Initialize SettingsViewModel
                 val settingsViewModel: SettingsViewModel = viewModel(
                     factory = object : ViewModelProvider.Factory {
                         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -69,7 +90,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 )
-                // 4. Home ViewModel
+
                 val homeViewModel: HomeViewModel = viewModel(
                     factory = object : ViewModelProvider.Factory {
                         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -78,11 +99,33 @@ class MainActivity : ComponentActivity() {
                     }
                 )
 
+                // --- UI State Helpers ---
+                val snackbarHostState = remember { SnackbarHostState() }
+                val scope = rememberCoroutineScope()
                 val navController = rememberNavController()
                 val items = listOf(Screen.Home, Screen.Favorites, Screen.Alerts, Screen.Settings)
 
+                // --- Permission Snackbar Logic ---
+                if (showPermissionSnackbar.value) {
+                    LaunchedEffect(snackbarHostState) {
+                        val result = snackbarHostState.showSnackbar(
+                            message = "Notifications are required for Weather Alerts",
+                            actionLabel = "Settings",
+                            duration = SnackbarDuration.Long
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            // Open App Settings so user can enable notifications manually
+                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                data = Uri.fromParts("package", packageName, null)
+                            }
+                            startActivity(intent)
+                        }
+                        showPermissionSnackbar.value = false
+                    }
+                }
 
                 Scaffold(
+                    snackbarHost = { SnackbarHost(snackbarHostState) },
                     bottomBar = {
                         NavigationBar(containerColor = BlueDark, contentColor = Color.White) {
                             val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -110,25 +153,46 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) { innerPadding ->
-                    NavHost(navController, Screen.Home.route, Modifier.padding(innerPadding)) {
+                    val forecast by homeViewModel.forecastState.collectAsState()
+                    val settings by homeViewModel.settings.collectAsState()
+                    val weatherDescription =
+                        forecast?.list?.firstOrNull()?.weather?.firstOrNull()?.description ?: "Weather update"
+                    NavHost(
+                        navController = navController,
+                        startDestination = Screen.Home.route,
+                        modifier = Modifier.padding(innerPadding)
+                    ) {
                         composable(Screen.Home.route) {
-                            val forecast by homeViewModel.forecastState.collectAsState()
-                            val settings by homeViewModel.settings.collectAsState()
-
                             if (forecast != null && settings != null) {
                                 HomeScreen(forecast!!, settings!!)
                             } else {
-                                // Show a loading spinner here
-                                Box(Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                     CircularProgressIndicator(color = Color.White)
                                 }
                             }
                         }
                         composable(Screen.Favorites.route) { FavoritesScreen() }
-                        composable(Screen.Alerts.route) { AlertsScreen(viewModel = alertsViewModel) }
-                        composable(Screen.Settings.route) { SettingsScreen(viewModel = settingsViewModel) }
+                        composable(Screen.Alerts.route) {
+                            AlertsScreen(viewModel = alertsViewModel,
+                            weatherDescription = weatherDescription)
+                        }
+                        composable(Screen.Settings.route) {
+                            SettingsScreen(viewModel = settingsViewModel)
+                        }
                     }
                 }
+            }
+        }
+    }
+
+    private fun checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
     }

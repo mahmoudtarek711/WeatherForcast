@@ -19,17 +19,24 @@ class ForcastRepository(
 
     // Local DB Operations
     suspend fun saveForecastItem(item: ForecastItem) {
-        localDataSource.insertMovie(item)
+        localDataSource.insertForcastItem(item)
     }
 
     suspend fun deleteForecastItem(item: ForecastItem) {
-        localDataSource.deleteMovie(item)
+        localDataSource.deleteForcastItem(item)
     }
 
     //alert
     fun getAllAlerts() = alertsDao.getAllAlerts()
 
-    suspend fun saveAlert(alert: AlertItem) = alertsDao.insertAlert(alert)
-
     suspend fun deleteAlert(alert: AlertItem) = alertsDao.deleteAlert(alert)
+
+    // Inside ForcastRepository class
+    suspend fun saveAlert(alert: AlertItem): Long {
+        return alertsDao.insertAlert(alert) // Change: Return the result of the insert
+    }
+
+    suspend fun deleteAlertById(alertId: Long) {
+        alertsDao.deleteAlertById(alertId)
+    }
 }

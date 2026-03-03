@@ -8,11 +8,11 @@ import com.example.weatherforcast.model.Response.ForecastItem
 class ForcastLocalDataSource(context: Context) {
     private val forcastDao: ForcastDao = AppDatabase.getInstance(context).moviesDao()
 
-    suspend fun insertMovie(day: ForecastItem) {
+    suspend fun insertForcastItem(day: ForecastItem) {
         forcastDao.insertDay(day)
     }
 
-    suspend fun deleteMovie(day: ForecastItem) {
+    suspend fun deleteForcastItem(day: ForecastItem) {
         forcastDao.deleteDay(day)
     }
 //
