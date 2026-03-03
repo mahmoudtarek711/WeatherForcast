@@ -25,13 +25,11 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlertsScreen(viewModel: AlertsViewModel) {
+fun AlertsScreen(viewModel: AlertsViewModel,weatherDescription: String) {
     var showSheet by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-
-    // Collecting StateFlow from ViewModel correctly
-    val alerts by viewModel.alerts.collectAsState()
+    val alerts by viewModel.alerts.collectAsState() //
 
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(BlueDark, BluePrimary, BlueSecondary)
@@ -58,16 +56,8 @@ fun AlertsScreen(viewModel: AlertsViewModel) {
                 .padding(padding)
         ) {
             if (alerts.isEmpty()) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "No alerts set",
-                        color = TextLightGrey,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No alerts set", color = TextLightGrey)
                 }
             } else {
                 LazyColumn(
@@ -75,16 +65,11 @@ fun AlertsScreen(viewModel: AlertsViewModel) {
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(
-                        items = alerts,
-                        key = { it.id } // Use the Room ID as the key for stable animations
-                    ) { alert ->
+                    items(items = alerts, key = { it.id }) { alert ->
                         val dismissState = rememberSwipeToDismissBoxState(
                             confirmValueChange = { dismissValue ->
                                 if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
-                                    val alertToDelete = alert
-                                    viewModel.removeAlert(alertToDelete)
-
+                                    viewModel.removeAlert(alert)
                                     scope.launch {
                                         val result = snackbarHostState.showSnackbar(
                                             message = "Alert removed",
@@ -92,13 +77,11 @@ fun AlertsScreen(viewModel: AlertsViewModel) {
                                             duration = SnackbarDuration.Short
                                         )
                                         if (result == SnackbarResult.ActionPerformed) {
-                                            viewModel.restoreAlert(alertToDelete)
+                                            viewModel.restoreAlert(alert,weatherDescription)
                                         }
                                     }
                                     true
-                                } else {
-                                    false
-                                }
+                                } else false
                             }
                         )
 
@@ -106,71 +89,17 @@ fun AlertsScreen(viewModel: AlertsViewModel) {
                             state = dismissState,
                             enableDismissFromStartToEnd = false,
                             backgroundContent = {
-                                val color = if (dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
-                                    ErrorRed.copy(alpha = 0.8f)
-                                } else Color.Transparent
-
+                                val color = if (dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart)
+                                    ErrorRed.copy(alpha = 0.8f) else Color.Transparent
                                 Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(color, MaterialTheme.shapes.large)
-                                        .padding(horizontal = 20.dp),
+                                    modifier = Modifier.fillMaxSize().background(color, MaterialTheme.shapes.large).padding(horizontal = 20.dp),
                                     contentAlignment = Alignment.CenterEnd
                                 ) {
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = "Delete",
-                                        tint = Color.White
-                                    )
+                                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.White)
                                 }
                             }
                         ) {
-                            Surface(
-                                modifier = Modifier.fillMaxWidth(),
-                                color = GlassWhite,
-                                shape = MaterialTheme.shapes.large,
-                                border = BorderStroke(1.dp, GlassStroke)
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(20.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(48.dp)
-                                            .background(GlassWhiteLight, MaterialTheme.shapes.medium),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = if (alert.isAlarm) Icons.Default.Alarm else Icons.Default.Notifications,
-                                            contentDescription = null,
-                                            tint = RainTeal,
-                                            modifier = Modifier.size(28.dp)
-                                        )
-                                    }
-
-                                    Spacer(Modifier.width(16.dp))
-
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = "Active Period",
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = TextLightGrey
-                                        )
-                                        Spacer(Modifier.height(4.dp))
-                                        Text(
-                                            text = "${alert.fromHour}:${alert.fromMinute.toString().padStart(2, '0')} — ${alert.toHour}:${alert.toMinute.toString().padStart(2, '0')}",
-                                            style = MaterialTheme.typography.headlineSmall,
-                                            color = TextWhite
-                                        )
-                                        Text(
-                                            text = if (alert.isAlarm) "Alarm Mode" else "Notification Mode",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = TextLightGrey.copy(alpha = 0.7f)
-                                        )
-                                    }
-                                }
-                            }
+                            AlertItemCard(alert)
                         }
                     }
                 }
@@ -180,9 +109,47 @@ fun AlertsScreen(viewModel: AlertsViewModel) {
                 AddAlertBottomSheet(
                     onCancel = { showSheet = false },
                     onAdd = { alert ->
-                        viewModel.addAlert(alert)
+                        viewModel.addAlert(alert,weatherDescription)
                         showSheet = false
                     }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AlertItemCard(alert: AlertItem) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = GlassWhite,
+        shape = MaterialTheme.shapes.large,
+        border = BorderStroke(1.dp, GlassStroke)
+    ) {
+        Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier.size(48.dp).background(GlassWhiteLight, MaterialTheme.shapes.medium),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (alert.isAlarm) Icons.Default.Alarm else Icons.Default.Notifications,
+                    contentDescription = null,
+                    tint = RainTeal,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+            Spacer(Modifier.width(16.dp))
+            Column {
+                Text(text = "Active Period", style = MaterialTheme.typography.labelMedium, color = TextLightGrey)
+                Text(
+                    text = "${alert.fromHour}:${alert.fromMinute.toString().padStart(2, '0')} — ${alert.toHour}:${alert.toMinute.toString().padStart(2, '0')}",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = TextWhite
+                )
+                Text(
+                    text = if (alert.isAlarm) "Alarm Mode" else "Notification Mode",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextLightGrey.copy(alpha = 0.7f)
                 )
             }
         }
