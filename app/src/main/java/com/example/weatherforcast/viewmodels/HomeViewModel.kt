@@ -26,16 +26,7 @@ class HomeViewModel(
             // You can add logic here to use GPS or the Manual City
             val city = if (userSettings.locationMode == com.example.weatherforcast.model.LocationMode.GPS)
                 "lat=46.23&lon=2.21" else userSettings.selectedCity
-
-            flow {
-                try {
-                    // Update your repository to accept language if needed
-                    val result = repository.getRemoteForecast(46.23, 2.21, "76c0ba629d316a5c11c0ead182aefac9")
-                    emit(result)
-                } catch (e: Exception) {
-                    emit(null)
-                }
-            }
+            repository.getRemoteForecast(46.23, 2.21, "76c0ba629d316a5c11c0ead182aefac9")
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
