@@ -15,12 +15,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -105,6 +107,16 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val items = listOf(Screen.Home, Screen.Favorites, Screen.Alerts, Screen.Settings)
 
+
+                LaunchedEffect(Unit) {
+                    homeViewModel.errorEvents.collect { message ->
+                        snackbarHostState.showSnackbar(
+                            message = message,
+                            duration = SnackbarDuration.Short
+                        )
+                    }
+                }
+
                 // --- Permission Snackbar Logic ---
                 if (showPermissionSnackbar.value) {
                     LaunchedEffect(snackbarHostState) {
@@ -123,9 +135,9 @@ class MainActivity : ComponentActivity() {
                         showPermissionSnackbar.value = false
                     }
                 }
-
                 Scaffold(
-                    snackbarHost = { SnackbarHost(snackbarHostState) },
+                    snackbarHost = { SnackbarHost(snackbarHostState) }
+                    ,
                     bottomBar = {
                         NavigationBar(containerColor = BlueDark, contentColor = Color.White) {
                             val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -153,8 +165,8 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) { innerPadding ->
-                    val forecast by homeViewModel.forecastState.collectAsState()
-                    val settings by homeViewModel.settings.collectAsState()
+                    val forecast by homeViewModel.forecastState.collectAsStateWithLifecycle()
+                    val settings by homeViewModel.settings.collectAsStateWithLifecycle()
                     val weatherDescription =
                         forecast?.list?.firstOrNull()?.weather?.firstOrNull()?.description ?: "Weather update"
                     NavHost(

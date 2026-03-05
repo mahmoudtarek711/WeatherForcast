@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.architechturestartercode.data.movie.repository.ForcastRepository
 import com.example.weatherforcast.data.local.SettingsManager
 import com.example.weatherforcast.model.Response.ForecastResponse
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -13,20 +14,41 @@ class HomeViewModel(
     private val settingsManager: SettingsManager
 ) : ViewModel() {
 
-    // 1. Expose the settings so the UI can decide which units to show
+    private val _errorEvents = MutableSharedFlow<String>()
+    val errorEvents = _errorEvents.asSharedFlow()
+
+    // Keep track if we were previously in an error state
+    private var wasInError = false
+
     val settings = settingsManager.settingsFlow.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = null
     )
 
-    // 2. Automatically re-fetch weather when City, Mode, or Language changes
     val forecastState: StateFlow<ForecastResponse?> = settingsManager.settingsFlow
         .flatMapLatest { userSettings ->
-            // You can add logic here to use GPS or the Manual City
-            val city = if (userSettings.locationMode == com.example.weatherforcast.model.LocationMode.GPS)
-                "lat=46.23&lon=2.21" else userSettings.selectedCity
-            repository.getRemoteForecast(46.23, 2.21, "76c0ba629d316a5c11c0ead182aefac9")
+            // Create a flow that handles its own retries internally
+            flow {
+                while (true) { // Infinite loop for retrying
+                    try {
+                        repository.getRemoteForecast(46.23, 2.21, "76c0ba629d316a5c11c0ead182aefac9")
+                            .collect { response ->
+                                if (wasInError) {
+                                    _errorEvents.emit("Internet back! Updating weather...")
+                                    wasInError = false
+                                }
+                                emit(response)
+                            }
+                        break // Success! Break the while loop
+                    } catch (e: Exception) {
+                        wasInError = true
+                        _errorEvents.emit("No Internet Connection. Retrying in 10s...")
+                        emit(null)
+                        delay(10000) // Wait 10 seconds before trying the 'while' loop again
+                    }
+                }
+            }
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
