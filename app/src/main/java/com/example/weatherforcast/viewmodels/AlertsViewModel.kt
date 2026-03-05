@@ -10,8 +10,12 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.architechturestartercode.data.movie.repository.ForcastRepository
 import com.example.weatherforcast.model.AlertItem
+import com.example.weatherforcast.ui.UiState
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -24,11 +28,20 @@ class AlertsViewModel(
 ) : AndroidViewModel(application) {
     private val TAG = "test"
 
-    val alerts: StateFlow<List<AlertItem>> = repository.getAllAlerts()
+    val alertsState: StateFlow<UiState<List<AlertItem>>> = repository.getAllAlerts()
+        .map { list ->
+            UiState.Success(list) as UiState<List<AlertItem>>
+        }
+        .onStart {
+            emit(UiState.Loading)
+        }
+        .catch { e ->
+            emit(UiState.Error(e.message ?: "Failed to load database"))
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
+            initialValue = UiState.Loading
         )
 
 
