@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">WeatherForcast</string>
+    <string name="hourly_rate">Hourly Rate</string>
 </resources>

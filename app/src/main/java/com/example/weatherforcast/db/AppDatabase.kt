@@ -14,7 +14,7 @@ import com.example.weatherforcast.model.Response.ForecastItem
 @Database(entities = [ForecastItem::class, AlertItem::class], version = 2) // Increase version
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun moviesDao(): ForcastDao
+    abstract fun ForcastDao(): ForcastDao
     abstract fun alertsDao(): AlertsDao // Add this
 
     companion object {

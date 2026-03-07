@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.weatherforcast.data.local.UserSettings
 import com.example.weatherforcast.model.Response.ForecastResponse
@@ -22,6 +23,7 @@ import com.example.weatherforcast.utils.extractFiveDaysForecast
 import com.example.weatherforcast.utils.extractTodayHours
 import com.example.weatherforcast.utils.kelvinToCelsius
 import com.example.weatherforcast.utils.kelvinToFahrenheit
+import com.example.weatherforcast.R
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,14 +78,14 @@ fun HomeScreen(
                 feels_like = formattedFeelsLike,
                 desc = description,
                 humidity = humidity,
-                wind = formattedWind, // REMOVED 'as String'
+                wind = formattedWind,
                 pressure = pressure,
                 clouds = clouds
             )
         }
         // Inside HomeScreen LazyColumn
         item {
-            SettingsSection("Hourly Rate") {
+            SettingsSection(stringResource(R.string.hourly_rate)) {
                 // PASS SETTINGS HERE
                 val todayHours = extractTodayHours(forcastResponse.list, settings)
                 HourlyForecast(todayHours)
