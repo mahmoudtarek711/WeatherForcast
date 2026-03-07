@@ -40,6 +40,7 @@ import com.example.weatherforcast.ui.screens.*
 import com.example.weatherforcast.ui.theme.*
 import com.example.weatherforcast.ui.viewmodels.AlertsViewModel
 import com.example.weatherforcast.ui.viewmodels.HomeViewModel
+import com.example.weatherforcast.utils.LocationProvider
 import com.example.weatherforcast.viewmodels.SettingsViewModel
 import kotlinx.coroutines.launch
 
@@ -54,6 +55,13 @@ class MainActivity : ComponentActivity() {
     ) { isGranted: Boolean ->
         if (!isGranted) {
             showPermissionSnackbar.value = true
+        }
+    }
+    private val locationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
+            // Refresh weather now that we have permission
         }
     }
 
@@ -96,10 +104,18 @@ class MainActivity : ComponentActivity() {
                 val homeViewModel: HomeViewModel = viewModel(
                     factory = object : ViewModelProvider.Factory {
                         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                            return HomeViewModel(repo, settingsManager) as T
+                            return HomeViewModel(repo, settingsManager, LocationProvider(this@MainActivity),this@MainActivity) as T
                         }
                     }
                 )
+
+                LaunchedEffect(Unit) {
+                    locationPermissionLauncher.launch(arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ))
+                }
+
 
                 // --- UI State Helpers ---
                 val snackbarHostState = remember { SnackbarHostState() }
