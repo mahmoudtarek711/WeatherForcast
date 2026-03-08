@@ -30,13 +30,15 @@ class ForcastRepository(
         }
 
     // Local DB Operations
-    suspend fun saveForecastItem(item: ForecastItem) {
+    suspend fun saveForecastItem(item: ForecastResponse) {
         localDataSource.insertForcastItem(item)
     }
 
-    suspend fun deleteForecastItem(item: ForecastItem) {
+    suspend fun deleteForecastItem(item: ForecastResponse) {
         localDataSource.deleteForcastItem(item)
     }
+
+    fun getStoredForecasts(): Flow<List<ForecastResponse>> = localDataSource.getAllStoredForecasts()
 
     //alert
     fun getAllAlerts() = alertsDao.getAllAlerts()

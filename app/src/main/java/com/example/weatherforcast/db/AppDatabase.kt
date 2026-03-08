@@ -10,8 +10,9 @@ import com.example.weatherforcast.data.db.Converters
 import com.example.weatherforcast.datasource.local.AlertsDao
 import com.example.weatherforcast.model.AlertItem
 import com.example.weatherforcast.model.Response.ForecastItem
+import com.example.weatherforcast.model.Response.ForecastResponse
 
-@Database(entities = [ForecastItem::class, AlertItem::class], version = 2) // Increase version
+@Database(entities = [ForecastResponse::class, AlertItem::class], version = 3) // Increase version
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun ForcastDao(): ForcastDao
