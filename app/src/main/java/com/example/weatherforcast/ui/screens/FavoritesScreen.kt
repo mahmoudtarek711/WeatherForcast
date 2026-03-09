@@ -14,7 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.weatherforcast.R
 import com.example.weatherforcast.data.local.UserSettings
 import com.example.weatherforcast.model.Response.ForecastResponse
 import com.example.weatherforcast.model.TempUnit
@@ -60,14 +62,16 @@ fun FavoritesScreen(
                 is UiState.Success -> {
                     LazyColumn(contentPadding = PaddingValues(16.dp)) {
                         items(uiState.data, key = { it.city.id }) { item ->
+                            val city_name_removed = stringResource(R.string.remove)+"${item.city.name}"
+                            val undo_message = stringResource(R.string.undo)
                             val dismissState = rememberSwipeToDismissBoxState(
                                 confirmValueChange = { value ->
                                     if (value == SwipeToDismissBoxValue.EndToStart) {
                                         viewModel.deleteFavorite(item)
                                         scope.launch {
                                             val result = snackbarHostState.showSnackbar(
-                                                message = "Removed ${item.city.name}",
-                                                actionLabel = "Undo",
+                                                message = city_name_removed,
+                                                actionLabel = undo_message,
                                                 withDismissAction = true,
                                                 duration = SnackbarDuration.Short
                                             )
@@ -95,7 +99,7 @@ fun FavoritesScreen(
                         }
                     }
                 }
-                is UiState.Error -> Text("No Favorites Found", color = Color.White, modifier = Modifier.align(Alignment.Center))
+                is UiState.Error -> Text(stringResource(R.string.nofavfound), color = Color.White, modifier = Modifier.align(Alignment.Center))
             }
         }
     }

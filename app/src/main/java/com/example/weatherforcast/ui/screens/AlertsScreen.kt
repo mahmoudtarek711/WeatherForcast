@@ -17,8 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.weatherforcast.R
 import com.example.weatherforcast.model.AlertItem
 import com.example.weatherforcast.ui.UiState
 import com.example.weatherforcast.ui.components.alertscomponents.AddAlertBottomSheet
@@ -49,7 +51,7 @@ fun AlertsScreen(viewModel: AlertsViewModel, weatherDescription: String) {
                 containerColor = RainTeal,
                 contentColor = TextWhite
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Alert")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_alert))
             }
         }
     ) { padding ->
@@ -69,7 +71,7 @@ fun AlertsScreen(viewModel: AlertsViewModel, weatherDescription: String) {
 
                 is UiState.Error -> {
                     Text(
-                        text = (state as? UiState.Error)?.message ?: "An error occurred",
+                        text = (state as? UiState.Error)?.message ?: stringResource(R.string.erroroccured),
                         modifier = Modifier.align(Alignment.Center),
                         color = Color.Red
                     )
@@ -80,7 +82,7 @@ fun AlertsScreen(viewModel: AlertsViewModel, weatherDescription: String) {
 
                     if (alertsList.isEmpty()) {
                         Text(
-                            text = "No alerts found. Tap + to add one!",
+                            text = stringResource(R.string.noalertsfound),
                             modifier = Modifier.align(Alignment.Center),
                             color = Color.White
                         )
@@ -127,14 +129,16 @@ fun AlertItemRow(
     weatherDescription: String
 ) {
     // UPDATED: New M3 API names
+    val undo_message = stringResource(R.string.undo)
+    val alert_delete_message = stringResource(R.string.alertdelete)
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.EndToStart) {
                 viewModel.removeAlert(alert)
                 scope.launch {
                     val result = snackbarHostState.showSnackbar(
-                        message = "Alert deleted",
-                        actionLabel = "Undo",
+                        message = alert_delete_message,
+                        actionLabel = undo_message,
                         duration = SnackbarDuration.Short
                     )
                     if (result == SnackbarResult.ActionPerformed) {
@@ -168,7 +172,7 @@ fun AlertItemRow(
             ) {
                 Icon(
                     Icons.Default.Delete,
-                    contentDescription = "Delete",
+                    contentDescription = stringResource(R.string.delete),
                     tint = Color.White
                 )
             }
@@ -201,7 +205,7 @@ fun AlertItemRow(
                 Spacer(Modifier.width(16.dp))
                 Column {
                     Text(
-                        text = "Active Period",
+                        text = stringResource(R.string.active_period),
                         style = MaterialTheme.typography.labelMedium,
                         color = TextLightGrey
                     )
@@ -211,7 +215,7 @@ fun AlertItemRow(
                         color = TextWhite
                     )
                     Text(
-                        text = if (alert.isAlarm) "Alarm Mode" else "Notification Mode",
+                        text = if (alert.isAlarm) stringResource(R.string.alarm_mode) else stringResource(R.string.notification_mode),
                         style = MaterialTheme.typography.bodySmall,
                         color = TextLightGrey.copy(alpha = 0.7f)
                     )

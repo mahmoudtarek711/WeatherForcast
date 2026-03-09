@@ -1,5 +1,6 @@
 package com.example.weatherforcast.ui.viewmodels
 
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.architechturestartercode.data.movie.repository.ForcastRepository
@@ -10,6 +11,7 @@ import com.example.weatherforcast.utils.LocationProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+
 
 class HomeViewModel(
     private val repository: ForcastRepository,
@@ -66,4 +68,5 @@ class HomeViewModel(
             30.0444 to 31.2357
         }
     }
+
 }

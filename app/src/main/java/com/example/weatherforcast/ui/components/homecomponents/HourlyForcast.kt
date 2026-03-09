@@ -8,7 +8,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.weatherforcast.R
 import com.example.weatherforcast.model.uiutils.HourWeather
 import com.example.weatherforcast.ui.theme.TextSizes
 import com.example.weatherforcast.ui.theme.TextWhite
@@ -23,7 +25,7 @@ fun HourlyForecast(hours: List<HourWeather>) {
     ) {
 
         Text(
-            text = "Today",
+            text = stringResource(R.string.today),
             color = TextWhite,
             fontSize = TextSizes.large,
             modifier = Modifier.padding(bottom = 12.dp)

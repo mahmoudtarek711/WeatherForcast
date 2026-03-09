@@ -9,9 +9,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.weatherforcast.R
 import com.example.weatherforcast.model.*
 import com.example.weatherforcast.ui.components.*
 import com.example.weatherforcast.ui.theme.*
@@ -41,11 +44,11 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
             modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            item { Text("Settings", style = MaterialTheme.typography.headlineMedium, color = TextWhite) }
+            item { Text(stringResource(R.string.settings), style = MaterialTheme.typography.headlineMedium, color = TextWhite) }
 
             // Location Section
             item {
-                SettingsSection(title = "Location") {
+                SettingsSection(title = stringResource(R.string.location)) {
                     LocationMode.entries.forEach { mode ->
                         OptionRow(label = mode.name, selected = settings.locationMode == mode) {
                             viewModel.updateLocationMode(mode)
@@ -53,15 +56,33 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                     }
                     if (settings.locationMode == LocationMode.MANUAL) {
                         OutlinedButton(onClick = { showCityPicker = true }, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                            Text("City: ${settings.selectedCity}", color = TextWhite)
+                            Text("${stringResource(R.string.city)}: ${settings.selectedCity}", color = TextWhite)
                         }
                     }
                 }
             }
             // Temp, Wind, Language sections...
-            item { SettingsSection(title = "Temperature Unit") { TempUnit.entries.forEach { u -> OptionRow(u.name, settings.tempUnit == u) { viewModel.updateTempUnit(u) } } } }
-            item { SettingsSection(title = "Wind Speed") { WindUnit.entries.forEach { u -> OptionRow(u.name, settings.windUnit == u) { viewModel.updateWindUnit(u) } } } }
-            item { SettingsSection(title = "Language") { Language.entries.forEach { l -> OptionRow(l.name, settings.language == l) { viewModel.updateLanguage(l) } } } }
+            item { SettingsSection(title = stringResource(R.string.temp_unit)) { TempUnit.entries.forEach { u -> OptionRow(u.name, settings.tempUnit == u) { viewModel.updateTempUnit(u) } } } }
+            item { SettingsSection(title = stringResource(R.string.wind_speed)) { WindUnit.entries.forEach { u -> OptionRow(u.name, settings.windUnit == u) { viewModel.updateWindUnit(u) } } } }
+            item {
+                Text(stringResource(R.string.language_title), style = MaterialTheme.typography.titleMedium, color = Color.White)
+
+                // English Option
+                OptionRow(
+                    label = stringResource(R.string.english),
+                    selected = settings.language == Language.EN,
+                    onClick = { viewModel.updateLanguage(Language.EN) }
+                )
+
+                // Arabic Option
+                OptionRow(
+                    label = stringResource(R.string.arabic), // Display name in Arabic
+                    selected = settings.language == Language.AR,
+                    onClick = { viewModel.updateLanguage(Language.AR) }
+                )
+            }
+
+            }
         }
 
         // --- OSMDroid City Picker ---
@@ -122,14 +143,13 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                                 showCityPicker = false
                             },
                             modifier = Modifier.fillMaxWidth()
-                        ) { Text(selectedCityName ?: "Tap map to select") }
+                        ) { Text(selectedCityName ?: stringResource(R.string.tap_map_to_select)) }
 
                         OutlinedButton(onClick = { showCityPicker = false }, modifier = Modifier.fillMaxWidth()) {
-                            Text("Cancel")
+                            Text(stringResource(R.string.cancel))
                         }
                     }
                 }
             }
         }
     }
-}
