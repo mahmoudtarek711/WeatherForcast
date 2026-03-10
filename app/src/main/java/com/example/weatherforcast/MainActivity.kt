@@ -10,6 +10,7 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -45,7 +46,7 @@ import com.example.weatherforcast.utils.LocationProvider
 import com.example.weatherforcast.viewmodels.FavoritesViewModel
 import com.example.weatherforcast.viewmodels.SettingsViewModel
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val showPermissionSnackbar = mutableStateOf(false)
     private val requestPermissionLauncher = registerForActivityResult(

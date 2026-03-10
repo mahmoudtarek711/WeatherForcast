@@ -108,7 +108,7 @@ fun FavoritesScreen(
         MapSelectionSheet(
             onDismiss = { showMap = false },
             onLocationSelected = { lat, lon ->
-                viewModel.addFavoriteByLocation(lat, lon, "76c0ba629d316a5c11c0ead182aefac9")
+                viewModel.addFavoriteByLocation(lat, lon, "76c0ba629d316a5c11c0ead182aefac9",settings.language.name.toLowerCase())
                 showMap = false
             }
         )

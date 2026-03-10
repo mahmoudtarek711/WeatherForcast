@@ -1,43 +1,54 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">توقعات الطقس</string>
     <string name="language_title">اللغة</string>
     <string name="english">English</string>
     <string name="arabic">العربية</string>
     <string name="tap_map_to_select">اضغط على الخريطة للاختيار</string>
-    <string name="cancel">إلغاء</string>
 
     <string name="feels_like">درجة الحرارة المحسوسة %s</string>
     <string name="humidity">الرطوبة</string>
     <string name="wind">الرياح</string>
-    <string name="pressure">الضغط الجوي</string>
-    <string name="clouds">السحب</string>
+    <string name="pressure">الضغط</string>
+    <string name="clouds">الغيوم</string>
     <string name="seven_day_forecast">توقعات 7 أيام</string>
     <string name="mph">ميل/ساعة</string>
     <string name="ms">متر/ثانية</string>
     <string name="hpa">هكتوباسكال</string>
-    <string name="hourly_rate">توقعات بالساعة</string>
-    <string name="today">اليوم</string>
+    <string name="hourly_rate">المعدل بالساعة</string>
 
     <string name="favorites">المفضلة</string>
     <string name="alerts">التنبيهات</string>
     <string name="add_alert">إضافة تنبيه</string>
     <string name="add_location">إضافة موقع</string>
+    <string name="cancel">إلغاء</string>
     <string name="save_alert">حفظ التنبيه</string>
-    <string name="active_period">فترة النشاط</string>
+    <string name="active_period">الفترة النشطة</string>
     <string name="alarm_mode">وضع المنبه</string>
-    <string name="notification_mode">وضع الإشعار</string>
-    <string name="end_time_error">يجب أن يكون وقت الانتهاء بعد وقت البدء</string>
-    <string name="select_time">اختر الوقت</string>
+    <string name="notification_mode">وضع الإشعارات</string>
+    <string name="end_time_error">يجب أن يكون وقت الانتهاء بعد وقت البداية</string>
     <string name="undo">تراجع</string>
     <string name="remove">إزالة</string>
     <string name="nofavfound">لا توجد مواقع مفضلة</string>
-    <string name="noalertsfound">لا توجد تنبيهات. اضغط على + لإضافة واحد!</string>
+    <string name="noalertsfound">لا توجد تنبيهات. اضغط + لإضافة تنبيه!</string>
     <string name="erroroccured">حدث خطأ</string>
     <string name="alertdelete">تم حذف التنبيه</string>
     <string name="delete">حذف</string>
     <string name="new_weatheralert">تنبيه طقس جديد</string>
-    <string name="start_time">وقت البدء</string>
+    <string name="start_time">وقت البداية</string>
     <string name="end_time">وقت الانتهاء</string>
-    <string name="enable_alarm">تفعيل منبه صوتي</string>
+    <string name="enable_alarm">تفعيل منبه بصوت مرتفع</string>
+
+    <string name="home">الرئيسية</string>
+    <string name="fav">المفضلة</string>
+    <string name="settings">الإعدادات</string>
+    <string name="today">اليوم</string>
+    <string name="tomorrow">غداً</string>
+    <string name="select_time">اختر الوقت</string>
+    <string name="ok">موافق</string>
+    <string name="temp_unit">وحدة درجة الحرارة</string>
+    <string name="wind_speed">سرعة الرياح</string>
+    <string name="location">الموقع</string>
+    <string name="gps">GPS</string>
+    <string name="manual">يدوي</string>
+    <string name="city">المدينة</string>
 </resources>

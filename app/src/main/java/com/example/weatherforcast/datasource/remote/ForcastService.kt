@@ -11,7 +11,8 @@ interface ForcastService {
     suspend fun getForecast(
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
-        @Query("appid") apiKey: String
+        @Query("appid") apiKey: String,
+        @Query("lang") lang: String
     ): ForecastResponse
 
 }

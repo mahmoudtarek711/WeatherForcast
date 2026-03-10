@@ -15,11 +15,11 @@ class ForcastRepository(
     private val alertsDao: AlertsDao
 ) {
     // Fetch from Remote
-    fun getRemoteForecast(lat: Double, lon: Double, apiKey: String): Flow<ForecastResponse> =
+    fun getRemoteForecast(lat: Double, lon: Double, apiKey: String,lang: String): Flow<ForecastResponse> =
         flow{
             try {
                 // 1. Ask the Remote Data Source for the data (one-shot call)
-                val response: ForecastResponse = remoteDataSource.getAllMovies(lat, lon, apiKey)
+                val response: ForecastResponse = remoteDataSource.getAllMovies(lat, lon, apiKey,lang)
 
                 // 2. "emit" means pushing the data into the pipe
                 emit(response)
