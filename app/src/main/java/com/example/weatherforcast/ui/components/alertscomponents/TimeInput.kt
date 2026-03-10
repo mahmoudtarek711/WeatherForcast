@@ -18,7 +18,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.weatherforcast.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,7 +30,8 @@ fun TimeInput(
 ) {
     var showDialog by remember { mutableStateOf(false) }
     val state = rememberTimePickerState()
-    var selectedTimeText by remember { mutableStateOf("Select Time") }
+    val select_time_string = stringResource(R.string.select_time)
+    var selectedTimeText by remember { mutableStateOf(select_time_string) }
 
     Column {
         OutlinedButton(
@@ -46,10 +49,10 @@ fun TimeInput(
                         onTimeSelected(state.hour, state.minute)
                         selectedTimeText = "${state.hour}:${state.minute.toString().padStart(2, '0')}"
                         showDialog = false
-                    }) { Text("OK") }
+                    }) { Text(stringResource(R.string.ok)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDialog = false }) { Text("Cancel") }
+                    TextButton(onClick = { showDialog = false }) { Text(stringResource(R.string.cancel)) }
                 }
             ) {
                 Box(modifier = Modifier.padding(16.dp)) {

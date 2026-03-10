@@ -79,13 +79,13 @@ fun DetailsScreen(
 
                 // Simplify this: No cast needed, and ensure it's a clean expression
                 val formattedWind = if (settings.windUnit == WindUnit.MPH) {
-                    "${(weather.wind.speed * 2.237).toInt()} mph"
+                    "${(weather.wind.speed * 2.237).toInt()}"+stringResource(R.string.mph)
                 } else {
-                    "${weather.wind.speed} m/s"
+                    "${weather.wind.speed}"+stringResource(R.string.ms)
                 }
 
                 val humidity = "${weather.main.humidity}%"
-                val pressure = "${weather.main.pressure} hPa"
+                val pressure = "${weather.main.pressure}"+stringResource(R.string.hpa)
                 val clouds = "${weather.clouds.all}%"
 
                 DayInsights(

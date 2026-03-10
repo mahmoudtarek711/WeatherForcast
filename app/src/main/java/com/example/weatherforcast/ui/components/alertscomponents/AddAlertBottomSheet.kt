@@ -6,7 +6,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.weatherforcast.R
 import com.example.weatherforcast.model.AlertItem
 import com.example.weatherforcast.ui.theme.GlassWhite
 import com.example.weatherforcast.ui.theme.GlassWhiteLight
@@ -28,6 +30,7 @@ fun AddAlertBottomSheet(
     var toMinute by remember { mutableStateOf(0) }
     var isAlarm by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf("") }
+    val timeErrorMessage = stringResource(R.string.end_time_error)
 
     ModalBottomSheet(
         onDismissRequest = onCancel,
@@ -36,13 +39,13 @@ fun AddAlertBottomSheet(
         sheetState = sheetState
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text("New Weather Alert", style = MaterialTheme.typography.headlineSmall)
+            Text(stringResource(R.string.new_weatheralert), style = MaterialTheme.typography.headlineSmall)
 
             Spacer(Modifier.height(20.dp))
 
-            TimeInput(label = "Start Time") { h, m -> fromHour = h; fromMinute = m }
+            TimeInput(label = stringResource(R.string.start_time)) { h, m -> fromHour = h; fromMinute = m }
             Spacer(Modifier.height(12.dp))
-            TimeInput(label = "End Time") { h, m -> toHour = h; toMinute = m }
+            TimeInput(label = stringResource(R.string.end_time)) { h, m -> toHour = h; toMinute = m }
 
             Spacer(Modifier.height(24.dp))
 
@@ -57,7 +60,7 @@ fun AddAlertBottomSheet(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Enable Loud Alarm", color = TextWhite)
+                    Text(stringResource(R.string.enable_alarm), color = TextWhite)
                     Switch(
                         checked = isAlarm,
                         onCheckedChange = { isAlarm = it },
@@ -87,7 +90,7 @@ fun AddAlertBottomSheet(
                     border = BorderStroke(1.dp, GlassStroke),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = TextWhite)
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
 
                 Spacer(Modifier.width(12.dp))
@@ -100,7 +103,7 @@ fun AddAlertBottomSheet(
                         val toTotal = toHour * 60 + toMinute
 
                         if (toTotal <= fromTotal) {
-                            error = "End time must be after start time"
+                            error = timeErrorMessage
                         } else {
                             onAdd(
                                 AlertItem(
@@ -113,7 +116,7 @@ fun AddAlertBottomSheet(
                             )}
                     }
                 ) {
-                    Text("Save Alert")
+                    Text(stringResource(R.string.save_alert))
                 }
             }
             Spacer(Modifier.height(24.dp))

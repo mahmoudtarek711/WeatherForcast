@@ -1,5 +1,6 @@
 package com.example.weatherforcast.ui.viewmodels
 
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.architechturestartercode.data.movie.repository.ForcastRepository
@@ -10,6 +11,7 @@ import com.example.weatherforcast.utils.LocationProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+
 
 class HomeViewModel(
     private val repository: ForcastRepository,
@@ -42,7 +44,7 @@ class HomeViewModel(
                             getCoordsFromCityName(userSettings.selectedCity)
                         }
 
-                        repository.getRemoteForecast(coords.first, coords.second, "76c0ba629d316a5c11c0ead182aefac9")
+                        repository.getRemoteForecast(coords.first, coords.second, "76c0ba629d316a5c11c0ead182aefac9",userSettings.language.name.toLowerCase())
                             .collect { response ->
                                 if (wasInError) {
                                     _errorEvents.emit("Internet back! Updating weather...")
@@ -66,4 +68,5 @@ class HomeViewModel(
             30.0444 to 31.2357
         }
     }
+
 }

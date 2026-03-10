@@ -1,5 +1,7 @@
 package com.example.weatherforcast.viewmodels
 
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weatherforcast.data.local.SettingsManager
@@ -28,9 +30,6 @@ class SettingsViewModel(private val settingsManager: SettingsManager) : ViewMode
         viewModelScope.launch { settingsManager.saveWindUnit(unit) }
     }
 
-    fun updateLanguage(lang: Language) {
-        viewModelScope.launch { settingsManager.saveLanguage(lang) }
-    }
 
     fun updateLocationMode(mode: LocationMode) {
         viewModelScope.launch { settingsManager.saveLocationMode(mode) }
@@ -38,5 +37,14 @@ class SettingsViewModel(private val settingsManager: SettingsManager) : ViewMode
 
     fun updateCity(city: String) {
         viewModelScope.launch { settingsManager.saveCity(city) }
+    }
+    fun updateLanguage(lang: Language) {
+        // 1. Save to DataStore so the app knows the user's preference
+        viewModelScope.launch { settingsManager.saveLanguage(lang) }
+
+        // 2. Apply the system locale
+        val code = if (lang == Language.AR) "ar" else "en"
+        val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(code)
+        AppCompatDelegate.setApplicationLocales(appLocale)
     }
 }

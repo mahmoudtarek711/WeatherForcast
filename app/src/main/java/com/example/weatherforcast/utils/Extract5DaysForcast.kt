@@ -1,10 +1,15 @@
 package com.example.weatherforcast.utils
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.res.stringResource
+import com.example.weatherforcast.R
 import com.example.weatherforcast.data.local.UserSettings
 import com.example.weatherforcast.model.Response.ForecastItem
 import com.example.weatherforcast.model.TempUnit
 import com.example.weatherforcast.model.uiutils.DayForecast
 
+@Composable
 fun extractFiveDaysForecast(
     list: List<ForecastItem>,
     settings: UserSettings // Add settings as a parameter
@@ -42,8 +47,8 @@ fun extractFiveDaysForecast(
         }
 
         val dayName = when (index) {
-            0 -> "Today"
-            1 -> "Tomorrow"
+            0 -> stringResource(R.string.today)
+            1 -> stringResource(R.string.tomorrow)
             else -> {
                 // Optional: You can use a Date formatter here for real day names (Mon, Tue)
                 representativeWeather.dt_txt.substring(0, 10)

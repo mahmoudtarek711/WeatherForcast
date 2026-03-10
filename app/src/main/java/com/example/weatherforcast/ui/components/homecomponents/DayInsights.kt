@@ -27,9 +27,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.weatherforcast.R
 import com.example.weatherforcast.ui.theme.GlassStroke
 import com.example.weatherforcast.ui.theme.GlassWhite
 import com.example.weatherforcast.ui.theme.GlassWhiteLight
@@ -86,7 +88,7 @@ fun DayInsights(
 
                 Spacer(modifier = Modifier.width(8.dp)) // Adds space between icon and text
 
-                Text(text = "Feels Like $feels_like", fontSize = TextSizes.medium, color = RainTeal)
+                Text(text = stringResource(R.string.feels_like)+ "$feels_like", fontSize = TextSizes.medium, color = RainTeal)
 
             }
             HorizontalDivider(
@@ -97,10 +99,10 @@ fun DayInsights(
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                InsightsCard("Humidity", humidity, Modifier.weight(1f))
-                InsightsCard("Wind", wind, Modifier.weight(1f))
-                InsightsCard("Pressure", pressure, Modifier.weight(1f))
-                InsightsCard("Clouds", clouds, Modifier.weight(1f))}
+                InsightsCard(stringResource(R.string.humidity), humidity, Modifier.weight(1f))
+                InsightsCard(stringResource(R.string.wind), wind, Modifier.weight(1f))
+                InsightsCard(stringResource(R.string.pressure), pressure, Modifier.weight(1f))
+                InsightsCard(stringResource(R.string.clouds), clouds, Modifier.weight(1f))}
         }
          }
     }

@@ -10,6 +10,7 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -17,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -44,7 +46,7 @@ import com.example.weatherforcast.utils.LocationProvider
 import com.example.weatherforcast.viewmodels.FavoritesViewModel
 import com.example.weatherforcast.viewmodels.SettingsViewModel
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val showPermissionSnackbar = mutableStateOf(false)
     private val requestPermissionLauncher = registerForActivityResult(
@@ -98,7 +100,7 @@ class MainActivity : ComponentActivity() {
                                 items.forEach { screen ->
                                     NavigationBarItem(
                                         icon = { Icon(screen.icon, contentDescription = null) },
-                                        label = { Text(screen.title) },
+                                        label = { Text(stringResource(screen.titleResId)) },
                                         selected = currentRoute == screen.route,
                                         onClick = {
                                             navController.navigate(screen.route) {
