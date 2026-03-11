@@ -1,6 +1,13 @@
 package com.example.weatherforcast.ui.screens
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.location.Geocoder
+import android.location.LocationManager
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,6 +46,16 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
         colors = listOf(BlueDark, BluePrimary, BlueSecondary)
     )
 
+    val context = LocalContext.current
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
+            viewModel.updateToCurrentLocation()
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize().background(backgroundGradient)) {
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -51,7 +68,25 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                 SettingsSection(title = stringResource(R.string.location)) {
                     LocationMode.entries.forEach { mode ->
                         OptionRow(label = mode.name, selected = settings.locationMode == mode) {
-                            viewModel.updateLocationMode(mode)
+                            if (mode == LocationMode.GPS) {
+                                val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                                val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                                        locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+
+                                if (!isGpsEnabled) {
+                                    // This line opens the System Location Settings
+                                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                                    context.startActivity(intent)
+                                } else {
+                                    // If already enabled, just request the permission
+                                    permissionLauncher.launch(arrayOf(
+                                        Manifest.permission.ACCESS_FINE_LOCATION,
+                                        Manifest.permission.ACCESS_COARSE_LOCATION
+                                    ))
+                                }
+                            } else {
+                                viewModel.updateLocationMode(mode)
+                            }
                         }
                     }
                     if (settings.locationMode == LocationMode.MANUAL) {
@@ -152,4 +187,5 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                 }
             }
         }
+
     }

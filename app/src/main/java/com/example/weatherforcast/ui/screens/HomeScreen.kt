@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.weatherforcast.data.local.UserSettings
 import com.example.weatherforcast.model.Response.ForecastResponse
 import com.example.weatherforcast.model.TempUnit
@@ -24,6 +25,7 @@ import com.example.weatherforcast.utils.extractTodayHours
 import com.example.weatherforcast.utils.kelvinToCelsius
 import com.example.weatherforcast.utils.kelvinToFahrenheit
 import com.example.weatherforcast.R
+import com.example.weatherforcast.ui.viewmodels.HomeViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,6 +33,7 @@ import com.example.weatherforcast.R
 fun HomeScreen(
     forcastResponse: ForecastResponse, settings: UserSettings
 ) {
+
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(
             Brush.horizontalGradient(
@@ -99,3 +102,4 @@ fun HomeScreen(
 
     }
 }
+

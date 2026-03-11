@@ -7,7 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -18,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
@@ -59,10 +60,14 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             WeatherForcastTheme {
+                val context = LocalContext.current
+                val snackbarHostState = remember { SnackbarHostState() }
+
                 val database = remember { AppDatabase.getInstance(this) }
                 val settingsManager = remember { SettingsManager(this) }
                 val repo = remember { ForcastRepository(ForcastRemoteDataSource(), ForcastLocalDataSource(this), database.alertsDao()) }
 
+                // ViewModels
                 val alertsViewModel: AlertsViewModel = viewModel(factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T = AlertsViewModel(application, repo) as T
                 })
@@ -70,20 +75,49 @@ class MainActivity : AppCompatActivity() {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T = FavoritesViewModel(repo) as T
                 })
                 val settingsViewModel: SettingsViewModel = viewModel(factory = object : ViewModelProvider.Factory {
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T = SettingsViewModel(settingsManager) as T
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T = SettingsViewModel(settingsManager, LocationProvider(context), context) as T
                 })
                 val homeViewModel: HomeViewModel = viewModel(factory = object : ViewModelProvider.Factory {
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T = HomeViewModel(repo, settingsManager, LocationProvider(this@MainActivity), this@MainActivity) as T
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T = HomeViewModel(repo, settingsManager, LocationProvider(context), context) as T
                 })
 
                 val navController = rememberNavController()
-                val snackbarHostState = remember { SnackbarHostState() }
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
                 val items = listOf(Screen.Home, Screen.Favorites, Screen.Alerts, Screen.Settings)
 
-                if (showPermissionSnackbar.value) {
-                    LaunchedEffect(snackbarHostState) {
+                // Permission Launcher
+                val permissionLauncher = rememberLauncherForActivityResult(
+                    ActivityResultContracts.RequestMultiplePermissions()
+                ) { permissions ->
+                    if (permissions.values.all { it }) {
+                        homeViewModel.triggerRefresh()
+                    }
+                }
+
+                // Handle Location Permissions/Settings Requests
+                LaunchedEffect(Unit) {
+                    homeViewModel.locationRequestState.collect { action ->
+                        when (action) {
+                            is HomeViewModel.LocationRequestState.RequestPermission -> {
+                                permissionLauncher.launch(arrayOf(
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION
+                                ))
+                                homeViewModel.resetLocationState()
+                            }
+                            is HomeViewModel.LocationRequestState.OpenLocationSettings -> {
+                                context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                                homeViewModel.resetLocationState()
+                            }
+                            else -> {}
+                        }
+                    }
+                }
+
+                // Notification Snackbar Logic
+                LaunchedEffect(showPermissionSnackbar.value) {
+                    if (showPermissionSnackbar.value) {
                         val result = snackbarHostState.showSnackbar("Notifications required", "Settings", duration = SnackbarDuration.Long)
                         if (result == SnackbarResult.ActionPerformed) {
                             startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply { data = Uri.fromParts("package", packageName, null) })
@@ -124,36 +158,24 @@ class MainActivity : AppCompatActivity() {
                             if (forecast != null && settings != null) HomeScreen(forecast!!, settings!!)
                             else Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                         }
-
                         composable(Screen.Favorites.route) {
                             FavoritesScreen(
                                 viewModel = favoritesViewModel,
                                 settingsViewModel = settingsViewModel,
-                                snackbarHostState = snackbarHostState,
-                                onCardClick = { forecast -> navController.navigate("details/${forecast.city.id}") }
+                                onCardClick = { forecast -> navController.navigate("details/${forecast.city.id}") },
+                                snackbarHostState = snackbarHostState
                             )
                         }
-
-                        composable(
-                            route = "details/{cityId}",
-                            arguments = listOf(navArgument("cityId") { type = NavType.IntType })
-                        ) { backStackEntry ->
+                        composable(route = "details/{cityId}", arguments = listOf(navArgument("cityId") { type = NavType.IntType })) { backStackEntry ->
                             val cityId = backStackEntry.arguments?.getInt("cityId")
                             val favorites = (favoritesState as? UiState.Success)?.data
                             val selectedForecast = favorites?.find { it.city.id == cityId }
-
                             if (selectedForecast != null && settings != null) {
-                                DetailsScreen(
-                                    forecast = selectedForecast,
-                                    settings = settings!!,
-                                    onNavigateBack = { navController.popBackStack() }
-                                )
+                                DetailsScreen(selectedForecast, settings!!) { navController.popBackStack() }
                             }
                         }
-
                         composable(Screen.Alerts.route) {
-                            val weatherDescription = forecast?.list?.firstOrNull()?.weather?.firstOrNull()?.description ?: "Weather update"
-                            AlertsScreen(alertsViewModel, weatherDescription)
+                            AlertsScreen(alertsViewModel, forecast?.list?.firstOrNull()?.weather?.firstOrNull()?.description ?: "Weather update")
                         }
                         composable(Screen.Settings.route) {
                             SettingsScreen(settingsViewModel)
