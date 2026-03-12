@@ -3,6 +3,7 @@ package com.example.architechturestartercode.data.movie.repository
 import com.example.architechturestartercode.data.movie.datasource.local.ForcastLocalDataSource
 import com.example.architechturestartercode.data.movie.datasource.remote.ForcastRemoteDataSource
 import com.example.weatherforcast.datasource.local.AlertsDao
+import com.example.weatherforcast.datasource.local.ForcastLocalDataSourceInterface
 import com.example.weatherforcast.model.AlertItem
 import com.example.weatherforcast.model.Response.ForecastItem
 import com.example.weatherforcast.model.Response.ForecastResponse
@@ -11,7 +12,7 @@ import kotlinx.coroutines.flow.flow
 
 class ForcastRepository(
     private val remoteDataSource: ForcastRemoteDataSource,
-    private val localDataSource: ForcastLocalDataSource,
+    private val localDataSource: ForcastLocalDataSourceInterface,
     private val alertsDao: AlertsDao
 ) {
     // Fetch from Remote
