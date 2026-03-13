@@ -7,8 +7,7 @@ import com.example.weatherforcast.model.Response.ForecastItem
 import com.example.weatherforcast.model.Response.ForecastResponse
 import kotlinx.coroutines.flow.Flow
 
-class ForcastLocalDataSource(context: Context): ForcastLocalDataSourceInterface {
-    private val forcastDao: ForcastDao = AppDatabase.getInstance(context).ForcastDao()
+class ForcastLocalDataSource(val forcastDao: ForcastDao): ForcastLocalDataSourceInterface {
 
     override suspend fun insertForcastItem(forcast: ForecastResponse) {
         forcastDao.insertDay(forcast)

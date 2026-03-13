@@ -21,7 +21,5 @@ interface ForcastDao {
     @Query("SELECT * FROM forecast_table") // Replace with your actual table name from ForecastResponse entity
     fun getAllStoredForecasts(): Flow<List<ForecastResponse>>
 
-//    @Query("SELECT * FROM movies")
-//    fun getAllMovies(): LiveData<List<Movie>>
 }
 

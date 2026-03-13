@@ -87,4 +87,9 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     testImplementation("app.cash.turbine:turbine:1.0.0") // For testing Flows easily
     testImplementation("androidx.arch.core:core-testing:2.2.0") // For InstantTaskExecutorRule
+
+    androidTestImplementation ("androidx.room:room-testing:2.6.1")
+    androidTestImplementation ("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    androidTestImplementation ("app.cash.turbine:turbine:1.0.0")
 }
