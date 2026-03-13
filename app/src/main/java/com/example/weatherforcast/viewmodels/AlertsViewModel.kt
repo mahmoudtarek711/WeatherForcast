@@ -62,9 +62,9 @@ class AlertsViewModel(
                     .build()
 
                 WorkManager.getInstance(getApplication()).enqueue(alertWorkRequest)
-                Log.d("test", "Alert Scheduled: $weatherDescription")
+
             } catch (e: Exception) {
-                Log.e("test", "Failed to add alert: ${e.message}")
+
             }
         }
     }

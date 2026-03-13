@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
 
                 val database = remember { AppDatabase.getInstance(this) }
                 val settingsManager = remember { SettingsManager(this) }
-                val repo = remember { ForcastRepository(ForcastRemoteDataSource(), ForcastLocalDataSource(this), database.alertsDao()) }
+                val repo = remember { ForcastRepository(ForcastRemoteDataSource(), ForcastLocalDataSource(AppDatabase.getInstance(context).ForcastDao()), database.alertsDao()) }
 
                 // ViewModels
                 val alertsViewModel: AlertsViewModel = viewModel(factory = object : ViewModelProvider.Factory {
