@@ -53,9 +53,9 @@ class HomeViewModel(
 
     private fun fetchForecast(userSettings: com.example.weatherforcast.data.local.UserSettings): Flow<ForecastResponse?> = flow {
         val coords = if (userSettings.locationMode == LocationMode.GPS) {
-            checkAndGetLocation()
+            checkAndGetLocation() // Only hits GPS hardware if mode is GPS
         } else {
-            getCoordsFromCityName(userSettings.selectedCity)
+            getCoordsFromCityName(userSettings.selectedCity) // Uses the saved manual string
         }
 
         repository.getRemoteForecast(
