@@ -1,5 +1,6 @@
 package com.example.weatherforcast.viewmodels
 
+import android.content.Context
 import android.location.Geocoder
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
@@ -20,10 +21,9 @@ import java.util.Locale
 class SettingsViewModel(
     private val settingsManager: SettingsManager,
     private val locationProvider: LocationProvider,
-    private val context: android.content.Context
+    private val context: Context
 ) : ViewModel() {
 
-    // Observe settings from DataStore as a StateFlow
     val settingsState: StateFlow<UserSettings> = settingsManager.settingsFlow
         .stateIn(
             scope = viewModelScope,
@@ -31,48 +31,48 @@ class SettingsViewModel(
             initialValue = UserSettings(TempUnit.C, WindUnit.MS, Language.EN, LocationMode.GPS, "Cairo")
         )
 
-    fun updateTempUnit(unit: TempUnit) {
-        viewModelScope.launch { settingsManager.saveTempUnit(unit) }
-    }
+    fun updateTempUnit(unit: TempUnit) { viewModelScope.launch { settingsManager.saveTempUnit(unit) } }
+    fun updateWindUnit(unit: WindUnit) { viewModelScope.launch { settingsManager.saveWindUnit(unit) } }
+    fun updateLocationMode(mode: LocationMode) { viewModelScope.launch { settingsManager.saveLocationMode(mode) } }
 
-    fun updateWindUnit(unit: WindUnit) {
-        viewModelScope.launch { settingsManager.saveWindUnit(unit) }
-    }
-
-
-    fun updateLocationMode(mode: LocationMode) {
-        viewModelScope.launch { settingsManager.saveLocationMode(mode) }
-    }
-
-    fun updateCity(city: String) {
-        viewModelScope.launch { settingsManager.saveCity(city) }
-    }
     fun updateLanguage(lang: Language) {
-        // 1. Save to DataStore so the app knows the user's preference
-        viewModelScope.launch { settingsManager.saveLanguage(lang) }
-
-        // 2. Apply the system locale
-        val code = if (lang == Language.AR) "ar" else "en"
-        val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(code)
-        AppCompatDelegate.setApplicationLocales(appLocale)
+        viewModelScope.launch {
+            settingsManager.saveLanguage(lang)
+            val code = if (lang == Language.AR) "ar" else "en"
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(code))
+        }
     }
+
+    // Called when the user picks a location on the MapSelectionSheet
+    fun updateCityFromMap(lat: Double, lon: Double) {
+        viewModelScope.launch {
+            val cityName = withContext(Dispatchers.IO) {
+                try {
+                    val geocoder = Geocoder(context, Locale.getDefault())
+                    val addresses = geocoder.getFromLocation(lat, lon, 1)
+                    addresses?.firstOrNull()?.locality ?: addresses?.firstOrNull()?.adminArea
+                } catch (e: Exception) { null }
+            }
+            cityName?.let {
+                settingsManager.saveManualCity(it)
+                settingsManager.saveLocationMode(LocationMode.MANUAL)
+            }
+        }
+    }
+
+    // Called for GPS button/automatic updates
     fun updateToCurrentLocation() {
         viewModelScope.launch {
-            // Use withContext(Dispatchers.IO) to ensure Geocoder doesn't block the UI
             val cityName = withContext(Dispatchers.IO) {
                 val location = locationProvider.getCurrentLocation()
                 location?.let { (lat, lon) ->
                     val geocoder = Geocoder(context, Locale.getDefault())
-                    // Use the older getFromLocation as it is more reliable for 1 result
-                    val addresses = geocoder.getFromLocation(lat, lon, 1)
-                    addresses?.firstOrNull()?.locality
+                    geocoder.getFromLocation(lat, lon, 1)?.firstOrNull()?.locality
                 }
             }
-
-            // Now back on Main (or the scope's dispatcher) to update state
             cityName?.let {
-                updateCity(it)
-                updateLocationMode(LocationMode.GPS)
+                settingsManager.saveGpsCity(it)
+                settingsManager.saveLocationMode(LocationMode.GPS)
             }
         }
     }

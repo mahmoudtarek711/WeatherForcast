@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.androidx.runtime)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
+    implementation(libs.androidx.ui.graphics)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -79,6 +80,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:19.0.0")
     implementation("org.osmdroid:osmdroid-android:6.1.18")
     implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.compose.material3:material3:1.2.1") // Or latest stable
     //testing
     testImplementation ("org.hamcrest:hamcrest:2.2")
     testImplementation ("org.hamcrest:hamcrest-library:2.2")
