@@ -25,13 +25,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
-import com.example.weatherforcast.R
 import com.example.weatherforcast.ui.theme.*
 
 class AlarmActivity : AppCompatActivity() {
@@ -43,10 +41,12 @@ class AlarmActivity : AppCompatActivity() {
         setTurnScreenOn(true)
 
         val description = intent.getStringExtra("WEATHER_DESC")
+        val iconCode = intent.getStringExtra("ICON_CODE")
 
         setContent {
             AlarmScreen(
                 description = description ?: "",
+                iconCode,
                 onDismiss = {
                     val notificationId = intent.getIntExtra("NOTIFICATION_ID", -1)
 
@@ -67,8 +67,10 @@ class AlarmActivity : AppCompatActivity() {
 @Composable
 fun AlarmScreen(
     description: String,
+    iconCode: String?,
     onDismiss: () -> Unit
 ) {
+    val iconUrl = iconCode?.let { "https://openweathermap.org/img/wn/${it}@2x.png" }
 
     Box(
         modifier = Modifier
@@ -98,6 +100,12 @@ fun AlarmScreen(
                         context.packageManager.getApplicationIcon(context.packageName)
                     ),
                     contentDescription = "App Logo",
+                    modifier = Modifier.size(70.dp)
+                )
+
+                androidx.compose.foundation.Image(
+                    painter = rememberAsyncImagePainter(iconUrl),
+                    contentDescription = "Weather Icon",
                     modifier = Modifier.size(70.dp)
                 )
 

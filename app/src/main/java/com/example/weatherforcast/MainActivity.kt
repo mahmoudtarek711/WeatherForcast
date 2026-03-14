@@ -183,7 +183,7 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                         composable(Screen.Alerts.route) {
-                            AlertsScreen(alertsViewModel, forecast?.list?.firstOrNull()?.weather?.firstOrNull()?.description ?: "Weather update")
+                            AlertsScreen(alertsViewModel, forecast?.list?.firstOrNull()?.weather?.firstOrNull()?.description ?: "Weather update",forecast?.list?.firstOrNull()?.weather?.firstOrNull()?.icon ?:"10d")
                         }
                         composable(Screen.Settings.route) {
                             SettingsScreen(settingsViewModel)
