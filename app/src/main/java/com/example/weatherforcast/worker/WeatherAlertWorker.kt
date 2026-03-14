@@ -143,8 +143,11 @@ class WeatherAlertWorker(
         )
 
         // Full screen intent
+        val notificationId = 1001
+
         val fullScreenIntent = Intent(applicationContext, AlarmActivity::class.java).apply {
             putExtra("WEATHER_DESC", description)
+            putExtra("NOTIFICATION_ID", notificationId)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 
@@ -170,7 +173,8 @@ class WeatherAlertWorker(
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .build()
 
-        notificationManager.notify(1001, notification)
+
+        notificationManager.notify(notificationId, notification)
     }
 
     // ----------------------------------------------------
