@@ -75,7 +75,8 @@ fun HomeScreen(
             val humidity = "${weather.main.humidity}%"
             val pressure = "${weather.main.pressure} hPa"
             val clouds = "${weather.clouds.all}%"
-
+            val iconCode = weather.weather[0].icon
+            val iconUrl = "https://openweathermap.org/img/wn/$iconCode@2x.png"
             DayInsights(
                 temprature = formattedTemp,
                 feels_like = formattedFeelsLike,
@@ -83,7 +84,8 @@ fun HomeScreen(
                 humidity = humidity,
                 wind = formattedWind,
                 pressure = pressure,
-                clouds = clouds
+                clouds = clouds,
+                iconUrl = iconUrl
             )
         }
         // Inside HomeScreen LazyColumn

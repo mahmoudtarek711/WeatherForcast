@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.weatherforcast.ui.theme.GlassStroke
 import com.example.weatherforcast.ui.theme.GlassWhite
 import com.example.weatherforcast.ui.theme.SunYellow
@@ -30,6 +31,7 @@ import com.example.weatherforcast.ui.theme.TextWhite
 fun HourCard(
     time: String = "08:00",
     degree: String = "24",
+    iconUrl: String
     // You can pass an ImageVector to make it dynamic later
 ) {
     Card(
@@ -51,11 +53,10 @@ fun HourCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Icon(
-                imageVector = Icons.Default.WbSunny, // You'll need material-icons-extended for this
-                contentDescription = null,
-                tint = SunYellow,
-                modifier = Modifier.size(24.dp)
+            AsyncImage(
+                model = iconUrl,
+                contentDescription = "Weather Icon",
+                modifier = Modifier.size(100.dp) // Adjust size as needed
             )
 
             Spacer(modifier = Modifier.height(8.dp))

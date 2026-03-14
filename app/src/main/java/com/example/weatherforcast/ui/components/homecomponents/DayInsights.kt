@@ -15,10 +15,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Air
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Compress
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -31,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.weatherforcast.R
 import com.example.weatherforcast.ui.theme.GlassStroke
 import com.example.weatherforcast.ui.theme.GlassWhite
@@ -49,11 +54,12 @@ fun DayInsights(
     humidity: String = "0",
     wind: String = "0",
     pressure: String = "0",
-    clouds: String = "0")
-{
-    Card(modifier = Modifier
-        .fillMaxWidth().fillMaxHeight() // Changed from fillMaxSize to fit nicely in a list
-        .padding(16.dp).padding(bottom = 20.dp),
+    clouds: String = "0",
+    iconUrl: String = "") {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth().fillMaxHeight() // Changed from fillMaxSize to fit nicely in a list
+            .padding(16.dp).padding(bottom = 20.dp),
         shape = RoundedCornerShape(28.dp),
         // This is the magic part:
         colors = CardDefaults.cardColors(
@@ -68,11 +74,10 @@ fun DayInsights(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Home,
-                contentDescription = "Location icon",
-                tint = RainTeal,
-                modifier = Modifier.size(60.dp).align(Alignment.CenterHorizontally)
+            AsyncImage(
+                model = iconUrl,
+                contentDescription = "Weather Icon",
+                modifier = Modifier.size(100.dp) // Adjust size as needed
             )
             Text(text = temprature, fontSize = TextSizes.xxxLarge, color = TextWhite)
             Text(text = desc, fontSize = TextSizes.xLarge, color = TextWhite)
@@ -88,7 +93,11 @@ fun DayInsights(
 
                 Spacer(modifier = Modifier.width(8.dp)) // Adds space between icon and text
 
-                Text(text = stringResource(R.string.feels_like)+ "$feels_like", fontSize = TextSizes.medium, color = RainTeal)
+                Text(
+                    text = stringResource(R.string.feels_like) + "$feels_like",
+                    fontSize = TextSizes.medium,
+                    color = RainTeal
+                )
 
             }
             HorizontalDivider(
@@ -99,10 +108,31 @@ fun DayInsights(
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                InsightsCard(stringResource(R.string.humidity), humidity, Modifier.weight(1f))
-                InsightsCard(stringResource(R.string.wind), wind, Modifier.weight(1f))
-                InsightsCard(stringResource(R.string.pressure), pressure, Modifier.weight(1f))
-                InsightsCard(stringResource(R.string.clouds), clouds, Modifier.weight(1f))}
+                InsightsCard(
+                    type = stringResource(R.string.humidity),
+                    value = humidity,
+                    icon = Icons.Default.WaterDrop, // Humidity Icon
+                    modifier = Modifier.weight(1f)
+                )
+                InsightsCard(
+                    type = stringResource(R.string.wind),
+                    value = wind,
+                    icon = Icons.Default.Air, // Wind Icon
+                    modifier = Modifier.weight(1f)
+                )
+                InsightsCard(
+                    type = stringResource(R.string.pressure),
+                    value = pressure,
+                    icon = Icons.Default.Compress, // Pressure Icon
+                    modifier = Modifier.weight(1f)
+                )
+                InsightsCard(
+                    type = stringResource(R.string.clouds),
+                    value = clouds,
+                    icon = Icons.Default.Cloud, // Clouds Icon
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
-         }
     }
+}

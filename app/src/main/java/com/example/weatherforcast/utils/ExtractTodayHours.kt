@@ -18,10 +18,12 @@ fun extractTodayHours(
             TempUnit.F -> "${kelvinToFahrenheit(tempKelvin)}°F" // Added ° before F
             TempUnit.K -> "${tempKelvin.toInt()}K"
         }
+        val iconCode = item.weather.firstOrNull()?.icon?:"01d"
 
         HourWeather(
             time = item.dt_txt.substring(11, 16),
-            degree = formattedTemp
+            degree = formattedTemp,
+            iconCode = iconCode
         )
     }
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">توقعات الطقس</string>
+    <string name="app_name">كلايمورا</string>
     <string name="language_title">اللغة</string>
     <string name="english">English</string>
     <string name="arabic">العربية</string>
@@ -10,7 +10,7 @@
     <string name="wind">الرياح</string>
     <string name="pressure">الضغط</string>
     <string name="clouds">الغيوم</string>
-    <string name="seven_day_forecast">توقعات 7 أيام</string>
+    <string name="five_day_forecast">توقعات 5 أيام</string>
     <string name="mph">ميل/ساعة</string>
     <string name="ms">متر/ثانية</string>
     <string name="hpa">هكتوباسكال</string>

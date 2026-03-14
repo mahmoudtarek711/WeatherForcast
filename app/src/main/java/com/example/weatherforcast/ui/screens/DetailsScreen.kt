@@ -87,7 +87,8 @@ fun DetailsScreen(
                 val humidity = "${weather.main.humidity}%"
                 val pressure = "${weather.main.pressure}"+stringResource(R.string.hpa)
                 val clouds = "${weather.clouds.all}%"
-
+                val iconCode = weather.weather[0].icon
+                val iconUrl = "https://openweathermap.org/img/wn/$iconCode@2x.png"
                 DayInsights(
                     temprature = formattedTemp,
                     feels_like = formattedFeelsLike,
@@ -95,7 +96,8 @@ fun DetailsScreen(
                     humidity = humidity,
                     wind = formattedWind,
                     pressure = pressure,
-                    clouds = clouds
+                    clouds = clouds,
+                    iconUrl = iconUrl
                 )
             }
 

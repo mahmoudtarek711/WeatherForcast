@@ -26,6 +26,7 @@ fun extractFiveDaysForecast(
 
         // 2. Select a representative weather status for the day (mid-day)
         val representativeWeather = items[items.size / 2]
+        val iconCode = representativeWeather.weather[0].icon // Extract icon code
 
         // 3. Convert Temps based on user settings
         val formattedHigh: String
@@ -60,7 +61,8 @@ fun extractFiveDaysForecast(
             date = representativeWeather.dt_txt.substring(5, 10),
             status = representativeWeather.weather[0].description,
             highTemp = formattedHigh,
-            lowTemp = formattedLow
+            lowTemp = formattedLow,
+            iconCode = iconCode
         )
     }
 }

@@ -27,9 +27,8 @@ import com.example.weatherforcast.ui.theme.RainTeal
 import com.example.weatherforcast.ui.theme.TextSizes
 import com.example.weatherforcast.ui.theme.TextWhite
 
-@Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun InsightsCard(type:String="Cloud", value:String="42",modifier: Modifier = Modifier)
+fun InsightsCard(type:String="Cloud", value:String="42",icon: androidx.compose.ui.graphics.vector.ImageVector,modifier: Modifier = Modifier)
 {
     Column(
         modifier = modifier.padding(5.dp),
@@ -47,7 +46,7 @@ fun InsightsCard(type:String="Cloud", value:String="42",modifier: Modifier = Mod
             border = BorderStroke(1.dp, GlassStroke)
         ){
             Icon(
-                imageVector = Icons.Default.Refresh,
+                imageVector = icon,
                 contentDescription = "Location icon",
                 tint = RainTeal,
                 modifier = Modifier.size(40.dp).align(Alignment.CenterHorizontally).padding(8.dp)

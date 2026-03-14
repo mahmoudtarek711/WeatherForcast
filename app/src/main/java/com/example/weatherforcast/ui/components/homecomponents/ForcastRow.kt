@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.weatherforcast.ui.theme.GreyLight
 import com.example.weatherforcast.ui.theme.RainTeal
 import com.example.weatherforcast.ui.theme.TextSizes
@@ -27,8 +28,10 @@ fun ForecastRow(
     date: String,
     status: String,
     highTemp: String,
-    lowTemp: String
+    lowTemp: String,
+    iconCode: String
 ) {
+    val iconUrl = "https://openweathermap.org/img/wn/$iconCode@2x.png"
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -47,11 +50,10 @@ fun ForecastRow(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.weight(1f)
         ) {
-            Icon(
-                imageVector = Icons.Default.Cloud, // Use dynamic icons based on status
-                contentDescription = null,
-                tint = RainTeal,
-                modifier = Modifier.size(24.dp)
+            AsyncImage(
+                model = iconUrl,
+                contentDescription = status,
+                modifier = Modifier.size(40.dp) // Adjusted size for list rows
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = status, fontSize = TextSizes.small, color = TextWhite)

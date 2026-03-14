@@ -136,6 +136,14 @@ class MainActivity : AppCompatActivity() {
                                         icon = { Icon(screen.icon, contentDescription = null) },
                                         label = { Text(stringResource(screen.titleResId)) },
                                         selected = currentRoute == screen.route,
+                                        colors = NavigationBarItemDefaults.colors(
+                                            selectedIconColor = RainTeal,
+                                            selectedTextColor = RainTeal,
+                                            indicatorColor = BlueDark, // This makes the selection pill disappear/match the background
+                                            unselectedIconColor = GreyLight,
+                                            unselectedTextColor = GreyLight
+                                        ),
+                                        // -----------------------
                                         onClick = {
                                             navController.navigate(screen.route) {
                                                 popUpTo(navController.graph.findStartDestination().id) { saveState = true }

@@ -39,10 +39,11 @@ fun HourlyForecast(hours: List<HourWeather>) {
             items(hours.size) { index ->
 
                 val hour = hours[index]
-
+                val iconUrl = "https://openweathermap.org/img/wn/${hour.iconCode}@2x.png"
                 HourCard(
                     time = hour.time,
-                    degree = hour.degree
+                    degree = hour.degree,
+                    iconUrl = iconUrl
                 )
             }
         }
