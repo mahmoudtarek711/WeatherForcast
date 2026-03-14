@@ -45,7 +45,7 @@ class AlertsViewModel(
         )
 
 
-    fun addAlert(alert: AlertItem, weatherDescription: String) {
+    fun addAlert(alert: AlertItem, weatherDescription: String,iconCode: String) {
         viewModelScope.launch {
             try {
                 val generatedId = repository.saveAlert(alert)
@@ -57,7 +57,8 @@ class AlertsViewModel(
                     .setInputData(workDataOf(
                         "ALERT_ID" to generatedId,
                         "IS_ALARM" to alert.isAlarm,
-                        "WEATHER_DESC" to weatherDescription // Passing the description here
+                        "WEATHER_DESC" to weatherDescription, // Passing the description here
+                        "ICON_CODE" to iconCode
                     ))
                     .build()
 
@@ -77,9 +78,9 @@ class AlertsViewModel(
         }
     }
 
-    fun restoreAlert(alert: AlertItem,desc:String) {
+    fun restoreAlert(alert: AlertItem,desc:String,iconCode: String) {
         viewModelScope.launch {
-            addAlert(alert,desc) // Re-schedules work and saves to DB
+            addAlert(alert,desc,iconCode) // Re-schedules work and saves to DB
         }
     }
 

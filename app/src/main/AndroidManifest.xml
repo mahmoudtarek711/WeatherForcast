@@ -23,6 +23,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherForcast">
         <activity
+            android:name=".ui.screens.AlarmActivity"
+            android:exported="false"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:excludeFromRecents="true"
+            />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"

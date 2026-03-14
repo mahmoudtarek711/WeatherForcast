@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlertsScreen(viewModel: AlertsViewModel, weatherDescription: String) {
+fun AlertsScreen(viewModel: AlertsViewModel, weatherDescription: String,iconCode: String) {
     var showSheet by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -99,7 +99,8 @@ fun AlertsScreen(viewModel: AlertsViewModel, weatherDescription: String) {
                                     viewModel = viewModel,
                                     snackbarHostState = snackbarHostState,
                                     scope = scope,
-                                    weatherDescription = weatherDescription
+                                    weatherDescription = weatherDescription,
+                                    iconCode
                                 )
                             }
                         }
@@ -112,7 +113,7 @@ fun AlertsScreen(viewModel: AlertsViewModel, weatherDescription: String) {
             AddAlertBottomSheet(
                 onCancel = { showSheet = false },
                 onAdd = { alert ->
-                    viewModel.addAlert(alert, weatherDescription)
+                    viewModel.addAlert(alert, weatherDescription,iconCode)
                     showSheet = false
                 }
             )
@@ -126,7 +127,8 @@ fun AlertItemRow(
     viewModel: AlertsViewModel,
     snackbarHostState: SnackbarHostState,
     scope: CoroutineScope,
-    weatherDescription: String
+    weatherDescription: String,
+    iconCode: String
 ) {
     // UPDATED: New M3 API names
     val undo_message = stringResource(R.string.undo)
@@ -142,7 +144,7 @@ fun AlertItemRow(
                         duration = SnackbarDuration.Short
                     )
                     if (result == SnackbarResult.ActionPerformed) {
-                        viewModel.restoreAlert(alert, weatherDescription)
+                        viewModel.restoreAlert(alert, weatherDescription,iconCode)
                     }
                 }
                 true
