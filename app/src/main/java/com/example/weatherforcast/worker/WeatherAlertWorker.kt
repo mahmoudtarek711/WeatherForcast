@@ -16,6 +16,7 @@ import com.example.weatherforcast.MainActivity
 import com.example.weatherforcast.R
 import com.example.weatherforcast.ui.theme.RainTeal
 import androidx.compose.ui.graphics.toArgb
+import com.example.weatherforcast.ui.screens.AlarmActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -142,7 +143,8 @@ class WeatherAlertWorker(
         )
 
         // Full screen intent
-        val fullScreenIntent = Intent(applicationContext, MainActivity::class.java).apply {
+        val fullScreenIntent = Intent(applicationContext, AlarmActivity::class.java).apply {
+            putExtra("WEATHER_DESC", description)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 
