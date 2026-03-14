@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WeatherForcast</string>
+    <string name="app_name">Climora</string>
     <string name="language_title">Language</string>
     <string name="english">English</string>
     <string name="arabic">العربية</string>
@@ -10,7 +10,7 @@
     <string name="wind">Wind</string>
     <string name="pressure">Pressure</string>
     <string name="clouds">Clouds</string>
-    <string name="seven_day_forecast">7-Day Forecast</string>
+    <string name="five_day_forecast">5-Day Forecast</string>
     <string name="mph">mph</string>
     <string name="ms">m/s</string>
     <string name="hpa">hPa</string>

@@ -5,5 +5,6 @@ data class DayForecast(
     val date: String,
     val status: String,
     val highTemp: String,
-    val lowTemp: String
+    val lowTemp: String,
+    val iconCode: String
 )

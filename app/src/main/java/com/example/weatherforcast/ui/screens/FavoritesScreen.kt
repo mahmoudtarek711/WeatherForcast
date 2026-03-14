@@ -123,6 +123,8 @@ fun FavoriteCard(item: ForecastResponse, settings: UserSettings, onClick: () -> 
         TempUnit.F -> "${kelvinToFahrenheit(kelvinTemp)}°F"
         TempUnit.K -> "${kelvinTemp.toInt()}K"
     }
+    val iconCode = item.list.firstOrNull()?.weather?.firstOrNull()?.icon ?: "01d"
+    val iconUrl = "https://openweathermap.org/img/wn/$iconCode@2x.png"
 
     Card(
         modifier = Modifier
@@ -139,7 +141,7 @@ fun FavoriteCard(item: ForecastResponse, settings: UserSettings, onClick: () -> 
                     color = Color.LightGray
                 )
             }
-            Text(text = displayTemp, style = MaterialTheme.typography.displaySmall, color = Color.White)
+            Text(text = displayTemp, style = MaterialTheme.typography.displaySmall, color = Color.White, modifier = Modifier.padding(end = 30.dp))
         }
     }
 }
