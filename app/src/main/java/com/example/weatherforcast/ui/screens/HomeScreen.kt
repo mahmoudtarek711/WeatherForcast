@@ -1,5 +1,7 @@
 package com.example.weatherforcast.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,8 +28,12 @@ import com.example.weatherforcast.utils.kelvinToCelsius
 import com.example.weatherforcast.utils.kelvinToFahrenheit
 import com.example.weatherforcast.R
 import com.example.weatherforcast.ui.viewmodels.HomeViewModel
+import com.example.weatherforcast.utils.formatDateTime
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -45,8 +51,12 @@ fun HomeScreen(
         ).padding(16.dp)
     ) {
 
+        val current = LocalDateTime.now()
+        val formatter = DateTimeFormatter.ofPattern("EEEE, MMM d, h:mm a")
+        val formattedDate = current.format(formatter)
+
         item {
-            HomeHeader(city = forcastResponse.city.name)
+            HomeHeader(city = forcastResponse.city.name , date = formattedDate)
         }
         // ... inside your LazyColumn item
         item {

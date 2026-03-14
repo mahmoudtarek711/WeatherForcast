@@ -26,7 +26,7 @@ import com.example.weatherforcast.ui.theme.TextSizes
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun HomeHeader(city:String="Cairo" , date:String="Thursday,Feb,26",time:String="06:32 PM")
+fun HomeHeader(city:String="Cairo" , date:String="Thursday,Feb,26")
 {
     Column(modifier = Modifier.padding(16.dp)) {
         Row(
@@ -51,6 +51,4 @@ fun HomeHeader(city:String="Cairo" , date:String="Thursday,Feb,26",time:String="
     }
 
         Text(date, fontSize = TextSizes.large, color = TextLightGrey)
-
-        Text(time, fontSize = TextSizes.large,color = TextLightGrey)
     }
