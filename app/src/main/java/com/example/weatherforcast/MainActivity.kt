@@ -3,6 +3,7 @@ package com.example.weatherforcast
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -19,8 +20,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -50,7 +54,7 @@ import com.example.weatherforcast.viewmodels.SettingsViewModel
 class MainActivity : AppCompatActivity() {
 
     private val showPermissionSnackbar = mutableStateOf(false)
-    private val requestPermissionLauncher = registerForActivityResult(
+    private val requestNotificationLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted -> if (!isGranted) showPermissionSnackbar.value = true }
 
@@ -61,11 +65,19 @@ class MainActivity : AppCompatActivity() {
         setContent {
             WeatherForcastTheme {
                 val context = LocalContext.current
+                val lifecycleOwner = LocalLifecycleOwner.current
                 val snackbarHostState = remember { SnackbarHostState() }
 
-                val database = remember { AppDatabase.getInstance(this) }
-                val settingsManager = remember { SettingsManager(this) }
-                val repo = remember { ForcastRepository(ForcastRemoteDataSource(), ForcastLocalDataSource(AppDatabase.getInstance(context).ForcastDao()), database.alertsDao()) }
+                // Repositories & Data Sources
+                val database = remember { AppDatabase.getInstance(context) }
+                val settingsManager = remember { SettingsManager(context) }
+                val repo = remember {
+                    ForcastRepository(
+                        ForcastRemoteDataSource(),
+                        ForcastLocalDataSource(database.ForcastDao()),
+                        database.alertsDao()
+                    )
+                }
 
                 // ViewModels
                 val alertsViewModel: AlertsViewModel = viewModel(factory = object : ViewModelProvider.Factory {
@@ -81,50 +93,58 @@ class MainActivity : AppCompatActivity() {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T = HomeViewModel(repo, settingsManager, LocationProvider(context), context) as T
                 })
 
-                val navController = rememberNavController()
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
-                val items = listOf(Screen.Home, Screen.Favorites, Screen.Alerts, Screen.Settings)
+                val locationRequestState by homeViewModel.locationRequestState.collectAsStateWithLifecycle()
 
-                // Permission Launcher
+                // Launchers
+                val locationSettingsLauncher = rememberLauncherForActivityResult(
+                    ActivityResultContracts.StartActivityForResult()
+                ) {
+                    homeViewModel.triggerRefresh()
+                }
+
                 val permissionLauncher = rememberLauncherForActivityResult(
                     ActivityResultContracts.RequestMultiplePermissions()
                 ) { permissions ->
-                    if (permissions.values.all { it }) {
+                    val granted = permissions.values.any { it }
+                    if (granted) {
                         homeViewModel.triggerRefresh()
                     }
                 }
 
-                // Handle Location Permissions/Settings Requests
-                LaunchedEffect(Unit) {
-                    homeViewModel.locationRequestState.collect { action ->
-                        when (action) {
-                            is HomeViewModel.LocationRequestState.RequestPermission -> {
-                                permissionLauncher.launch(arrayOf(
-                                    Manifest.permission.ACCESS_FINE_LOCATION,
-                                    Manifest.permission.ACCESS_COARSE_LOCATION
-                                ))
-                                homeViewModel.resetLocationState()
-                            }
-                            is HomeViewModel.LocationRequestState.OpenLocationSettings -> {
-                                context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                                homeViewModel.resetLocationState()
-                            }
-                            else -> {}
+                // 1. Observer to refresh data when user returns to app (e.g., from toggling GPS in status bar)
+                DisposableEffect(lifecycleOwner) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        if (event == Lifecycle.Event.ON_RESUME) {
+                            homeViewModel.triggerRefresh()
                         }
+                    }
+                    lifecycleOwner.lifecycle.addObserver(observer)
+                    onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+                }
+
+                // 2. Handle specific requests from ViewModel (Dialogs/Settings)
+                LaunchedEffect(locationRequestState) {
+                    when (locationRequestState) {
+                        is HomeViewModel.LocationRequestState.RequestPermission -> {
+                            permissionLauncher.launch(arrayOf(
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                            ))
+                            homeViewModel.resetLocationState()
+                        }
+                        is HomeViewModel.LocationRequestState.OpenLocationSettings -> {
+                            locationSettingsLauncher.launch(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                            homeViewModel.resetLocationState()
+                        }
+                        else -> Unit
                     }
                 }
 
-                // Notification Snackbar Logic
-                LaunchedEffect(showPermissionSnackbar.value) {
-                    if (showPermissionSnackbar.value) {
-                        val result = snackbarHostState.showSnackbar("Notifications required", "Settings", duration = SnackbarDuration.Long)
-                        if (result == SnackbarResult.ActionPerformed) {
-                            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply { data = Uri.fromParts("package", packageName, null) })
-                        }
-                        showPermissionSnackbar.value = false
-                    }
-                }
+                // UI Navigation Setup
+                val navController = rememberNavController()
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
+                val items = listOf(Screen.Home, Screen.Favorites, Screen.Alerts, Screen.Settings)
 
                 Scaffold(
                     snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -139,11 +159,10 @@ class MainActivity : AppCompatActivity() {
                                         colors = NavigationBarItemDefaults.colors(
                                             selectedIconColor = RainTeal,
                                             selectedTextColor = RainTeal,
-                                            indicatorColor = BlueDark, // This makes the selection pill disappear/match the background
+                                            indicatorColor = BlueDark,
                                             unselectedIconColor = GreyLight,
                                             unselectedTextColor = GreyLight
                                         ),
-                                        // -----------------------
                                         onClick = {
                                             navController.navigate(screen.route) {
                                                 popUpTo(navController.graph.findStartDestination().id) { saveState = true }
@@ -163,18 +182,26 @@ class MainActivity : AppCompatActivity() {
 
                     NavHost(navController, startDestination = Screen.Home.route, modifier = Modifier.padding(innerPadding)) {
                         composable(Screen.Home.route) {
-                            if (forecast != null && settings != null) HomeScreen(forecast!!, settings!!)
-                            else Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                            if (forecast != null && settings != null) {
+                                HomeScreen(forecast!!, settings!!)
+                            } else {
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator(color = RainTeal)
+                                }
+                            }
                         }
                         composable(Screen.Favorites.route) {
                             FavoritesScreen(
                                 viewModel = favoritesViewModel,
                                 settingsViewModel = settingsViewModel,
-                                onCardClick = { forecast -> navController.navigate("details/${forecast.city.id}") },
+                                onCardClick = { clickedForecast -> navController.navigate("details/${clickedForecast.city.id}") },
                                 snackbarHostState = snackbarHostState
                             )
                         }
-                        composable(route = "details/{cityId}", arguments = listOf(navArgument("cityId") { type = NavType.IntType })) { backStackEntry ->
+                        composable(
+                            route = "details/{cityId}",
+                            arguments = listOf(navArgument("cityId") { type = NavType.IntType })
+                        ) { backStackEntry ->
                             val cityId = backStackEntry.arguments?.getInt("cityId")
                             val favorites = (favoritesState as? UiState.Success)?.data
                             val selectedForecast = favorites?.find { it.city.id == cityId }
@@ -183,7 +210,9 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                         composable(Screen.Alerts.route) {
-                            AlertsScreen(alertsViewModel, forecast?.list?.firstOrNull()?.weather?.firstOrNull()?.description ?: "Weather update",forecast?.list?.firstOrNull()?.weather?.firstOrNull()?.icon ?:"10d")
+                            val desc = forecast?.list?.firstOrNull()?.weather?.firstOrNull()?.description ?: "Weather update"
+                            val icon = forecast?.list?.firstOrNull()?.weather?.firstOrNull()?.icon ?: "10d"
+                            AlertsScreen(alertsViewModel, desc, icon)
                         }
                         composable(Screen.Settings.route) {
                             SettingsScreen(settingsViewModel)
@@ -197,7 +226,7 @@ class MainActivity : AppCompatActivity() {
     private fun checkNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            requestNotificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 }
