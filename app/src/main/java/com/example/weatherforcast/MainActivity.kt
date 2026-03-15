@@ -50,6 +50,7 @@ import com.example.weatherforcast.ui.viewmodels.HomeViewModel
 import com.example.weatherforcast.utils.LocationProvider
 import com.example.weatherforcast.viewmodels.FavoritesViewModel
 import com.example.weatherforcast.viewmodels.SettingsViewModel
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 class MainActivity : AppCompatActivity() {
 
@@ -59,6 +60,7 @@ class MainActivity : AppCompatActivity() {
     ) { isGranted -> if (!isGranted) showPermissionSnackbar.value = true }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         checkNotificationPermission()
 

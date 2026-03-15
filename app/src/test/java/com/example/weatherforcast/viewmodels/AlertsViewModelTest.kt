@@ -83,7 +83,7 @@ class AlertsViewModelTest {
         coEvery { repository.saveAlert(alert) } returns 10L
 
         // When
-        viewModel.addAlert(alert, desc)
+        viewModel.addAlert(alert, desc, iconCode = mockk())
 
         // Then
         // 1. Verify Repository was called

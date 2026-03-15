@@ -95,4 +95,5 @@ dependencies {
     androidTestImplementation ("androidx.test.ext:junit:1.1.5")
     androidTestImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     androidTestImplementation ("app.cash.turbine:turbine:1.0.0")
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }
