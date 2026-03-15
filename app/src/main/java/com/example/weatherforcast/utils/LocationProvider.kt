@@ -24,34 +24,33 @@ class LocationProvider(private val context: Context) {
 
     @SuppressLint("MissingPermission")
     suspend fun getCurrentLocation(): Pair<Double, Double>? = suspendCancellableCoroutine { cont ->
+        // 1. Create a cancellation token
+        val cancellationTokenSource = CancellationTokenSource()
+
+        // 2. If the user leaves the screen (coroutine cancels), stop the GPS request to save battery
+        cont.invokeOnCancellation {
+            cancellationTokenSource.cancel()
+        }
+
         val request = CurrentLocationRequest.Builder()
             .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-            .setDurationMillis(10000) // Give it 10 seconds to find a fix
+            .setDurationMillis(10000) // 10 seconds to find a lock, otherwise it fails gracefully
             .build()
 
-        fusedLocationClient.getCurrentLocation(request, null)
+        fusedLocationClient.getCurrentLocation(request, cancellationTokenSource.token)
             .addOnSuccessListener { location ->
                 if (location != null) {
                     cont.resume(Pair(location.latitude, location.longitude))
                 } else {
-                    // Fallback to active request if the first one returns null
-                    requestContinuousUpdates(cont)
+                    // If hardware fails to get a lock within 10 seconds, return null
+                    // Your ViewModel will safely fall back to the default coordinates
+                    cont.resume(null)
                 }
             }
-            .addOnFailureListener { cont.resume(null) }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun requestContinuousUpdates(cont: kotlinx.coroutines.CancellableContinuation<Pair<Double, Double>?>) {
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000).build()
-        val callback = object : LocationCallback() {
-            override fun onLocationResult(result: LocationResult) {
-                fusedLocationClient.removeLocationUpdates(this)
-                val loc = result.lastLocation
-                cont.resume(loc?.let { Pair(it.latitude, it.longitude) })
+            .addOnFailureListener {
+                // Handles exceptions like location being turned off mid-search
+                cont.resume(null)
             }
-        }
-        fusedLocationClient.requestLocationUpdates(locationRequest, callback, Looper.getMainLooper())
     }
     fun isLocationEnabled(): Boolean {
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager

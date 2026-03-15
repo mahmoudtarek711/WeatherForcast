@@ -32,12 +32,27 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
     var showCityPicker by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
+    val locationSettingsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        // When returning from settings, fetch location
+        viewModel.updateToCurrentLocation()
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
-            viewModel.updateToCurrentLocation()
+        val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+        if (granted) {
+            // Permission granted, now check if GPS hardware is actually on
+            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                locationSettingsLauncher.launch(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+            } else {
+                viewModel.updateToCurrentLocation()
+            }
         }
     }
 
@@ -63,18 +78,14 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                 SettingsSection(title = stringResource(R.string.location)) {
                     LocationMode.entries.forEach { mode ->
                         OptionRow(label = mode.name, selected = settings.locationMode == mode) {
+                            viewModel.updateLocationMode(mode) // Visually select it immediately
+
                             if (mode == LocationMode.GPS) {
-                                val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                                    context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                                } else {
-                                    permissionLauncher.launch(arrayOf(
-                                        Manifest.permission.ACCESS_FINE_LOCATION,
-                                        Manifest.permission.ACCESS_COARSE_LOCATION
-                                    ))
-                                }
-                            } else {
-                                viewModel.updateLocationMode(mode)
+                                // Launch permission request (which chains to GPS check if needed)
+                                permissionLauncher.launch(arrayOf(
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION
+                                ))
                             }
                         }
                     }
