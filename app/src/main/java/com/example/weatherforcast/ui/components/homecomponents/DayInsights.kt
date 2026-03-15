@@ -94,8 +94,8 @@ fun DayInsights(
                 Spacer(modifier = Modifier.width(8.dp)) // Adds space between icon and text
 
                 Text(
-                    text = stringResource(R.string.feels_like) + feels_like,
-                    fontSize = TextSizes.medium,
+                    text = stringResource(R.string.feels_like) +" "+ feels_like,
+                    fontSize = TextSizes.large,
                     color = RainTeal
                 )
 

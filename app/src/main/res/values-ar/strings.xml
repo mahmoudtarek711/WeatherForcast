@@ -5,7 +5,7 @@
     <string name="arabic">العربية</string>
     <string name="tap_map_to_select">اضغط على الخريطة للاختيار</string>
 
-    <string name="feels_like">درجة الحرارة المحسوسة %s</string>
+    <string name="feels_like">درجة الحرارة المحسوسة </string>
     <string name="humidity">الرطوبة</string>
     <string name="wind">الرياح</string>
     <string name="pressure">الضغط</string>

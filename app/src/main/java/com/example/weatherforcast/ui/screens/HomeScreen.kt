@@ -44,8 +44,9 @@ fun HomeScreen(
         modifier = Modifier.fillMaxSize().background(
             Brush.horizontalGradient(
                 listOf(
-                    BlueSecondary,
-                    BlueAccent
+                    BluePrimary,
+                    BlueDark,
+                    BlueDark,
                 )
             )
         ).padding(16.dp)
