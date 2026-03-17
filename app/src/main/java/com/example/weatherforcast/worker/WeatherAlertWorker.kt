@@ -14,11 +14,7 @@ import androidx.work.WorkerParameters
 import com.example.architechturestartercode.data.db.AppDatabase
 import com.example.weatherforcast.MainActivity
 import com.example.weatherforcast.R
-import com.example.weatherforcast.ui.theme.RainTeal
-import androidx.compose.ui.graphics.toArgb
 import com.example.weatherforcast.ui.screens.AlarmActivity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class WeatherAlertWorker(
     context: Context,
@@ -27,134 +23,67 @@ class WeatherAlertWorker(
 
     companion object {
         const val CHANNEL_ID = "weather_alerts_channel"
-        const val ALARM_CHANNEL_ID = "alarm_channel"
+        const val ALARM_CHANNEL_ID = "alarm_channel_v4"
         const val TAG = "WeatherWorker"
     }
 
-    private val alertsDao =
-        AppDatabase.getInstance(applicationContext).alertsDao()
+    private val alertsDao = AppDatabase.getInstance(applicationContext).alertsDao()
 
-    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+    override suspend fun doWork(): Result {
 
-        val alertId = inputData.getLong("ALERT_ID", -1L)
         val isAlarm = inputData.getBoolean("IS_ALARM", false)
-        val weatherDesc =
-            inputData.getString("WEATHER_DESC") ?: "Check your weather forecast"
+        val description = inputData.getString("WEATHER_DESC") ?: "Weather Alert!"
+        val alertId = inputData.getLong("ALERT_ID", -1L)
 
-        Log.d(TAG, "Worker started for Alert ID: $alertId | Alarm: $isAlarm")
+        Log.d(TAG, "Worker started | Alarm: $isAlarm | AlertID: $alertId")
 
-        try {
+        return try {
 
             if (isAlarm) {
-                triggerAlarmNotification(weatherDesc)
+                triggerAlarm(description)
             } else {
-                showSimpleNotification(weatherDesc)
+                showSimpleNotification(description)
             }
 
+            // ✅ Remove alarm from DB after triggering
             if (alertId != -1L) {
                 alertsDao.deleteAlertById(alertId)
+                Log.d(TAG, "Alert deleted from DB: $alertId")
             }
 
             Result.success()
 
         } catch (e: Exception) {
-            Log.e(TAG, "Worker error: ${e.message}")
+            Log.e(TAG, "Error: ${e.message}")
             Result.failure()
         }
     }
 
-    // ----------------------------------------------------
-    // BASE BUILDER
-    // ----------------------------------------------------
+    // -------------------- ALARM --------------------
+    private fun triggerAlarm(description: String) {
 
-    private fun getBaseNotificationBuilder(
-        channelId: String,
-        title: String,
-        description: String
-    ): NotificationCompat.Builder {
+        val manager =
+            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        val intent = Intent(applicationContext, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
+        createAlarmChannel(manager)
 
-        val pendingIntent = PendingIntent.getActivity(
-            applicationContext,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        return NotificationCompat.Builder(applicationContext, channelId)
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle(title)
-            .setContentText(description)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(description))
-            .setColor(RainTeal.toArgb())
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
-    }
-
-    // ----------------------------------------------------
-    // SIMPLE NOTIFICATION
-    // ----------------------------------------------------
-
-    private fun showSimpleNotification(description: String) {
-
-        val notificationManager =
-            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE)
-                    as NotificationManager
-
-        createNotificationChannel(
-            notificationManager,
-            CHANNEL_ID,
-            "Weather Alerts"
-        )
-
-        val notification = getBaseNotificationBuilder(
-            CHANNEL_ID,
-            "Weather Update",
-            description
-        ).build()
-
-        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
-    }
-
-    // ----------------------------------------------------
-    // ALARM NOTIFICATION
-    // ----------------------------------------------------
-
-    private fun triggerAlarmNotification(description: String) {
-
-        val notificationManager =
-            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE)
-                    as NotificationManager
-
-        createAlarmChannel(notificationManager)
-
-        // Normal tap intent
-        val normalIntent = Intent(applicationContext, MainActivity::class.java)
-
-        val normalPendingIntent = PendingIntent.getActivity(
-            applicationContext,
-            0,
-            normalIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        // Full screen intent
-        val notificationId = 1001
-
-        val fullScreenIntent = Intent(applicationContext, AlarmActivity::class.java).apply {
+        val alarmIntent = Intent(applicationContext, AlarmActivity::class.java).apply {
             putExtra("WEATHER_DESC", description)
-            putExtra("NOTIFICATION_ID", notificationId)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
 
         val fullScreenPendingIntent = PendingIntent.getActivity(
             applicationContext,
             1,
-            fullScreenIntent,
+            alarmIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val mainIntent = Intent(applicationContext, MainActivity::class.java)
+        val mainPendingIntent = PendingIntent.getActivity(
+            applicationContext,
+            2,
+            mainIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -162,58 +91,74 @@ class WeatherAlertWorker(
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("Weather Alarm")
             .setContentText(description)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(description))
-            .setColor(RainTeal.toArgb())
+            .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setOngoing(true)
-            .setAutoCancel(false)
-            .setContentIntent(normalPendingIntent)
-            .setFullScreenIntent(fullScreenPendingIntent, true)
+            .setFullScreenIntent(fullScreenPendingIntent, true) // 🔥 popup
+            .setContentIntent(mainPendingIntent) // tap goes to Main
+            .setOngoing(false) // can be dismissed
+            .setAutoCancel(true)
             .build()
 
+        manager.notify(1001, notification)
 
-        notificationManager.notify(notificationId, notification)
-    }
-
-    // ----------------------------------------------------
-    // CHANNELS
-    // ----------------------------------------------------
-
-    private fun createNotificationChannel(
-        manager: NotificationManager,
-        id: String,
-        name: String
-    ) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-            val channel = NotificationChannel(
-                id,
-                name,
-                NotificationManager.IMPORTANCE_HIGH
-            )
-
-            manager.createNotificationChannel(channel)
+        // 🔥 Try launching activity directly (many devices require this)
+        try {
+            applicationContext.startActivity(alarmIntent)
+            Log.d(TAG, "AlarmActivity launched directly")
+        } catch (e: Exception) {
+            Log.e(TAG, "Activity launch failed: ${e.message}")
         }
     }
 
-    private fun createAlarmChannel(manager: NotificationManager) {
+    // -------------------- SIMPLE NOTIFICATION --------------------
+    private fun showSimpleNotification(description: String) {
+
+        val manager =
+            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Weather Alerts",
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            channel.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION), null)
+            manager.createNotificationChannel(channel)
+        }
 
+        val intent = Intent(applicationContext, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            applicationContext,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("Weather Update")
+            .setContentText(description)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+            .build()
+
+        manager.notify(2001, notification)
+    }
+
+    // -------------------- ALARM CHANNEL --------------------
+    private fun createAlarmChannel(manager: NotificationManager) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 ALARM_CHANNEL_ID,
                 "Critical Alarms",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                setSound(
-                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
-                    null
-                )
+                setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM), null)
+                enableVibration(true)
                 lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
+                setBypassDnd(true)
             }
-
             manager.createNotificationChannel(channel)
         }
     }

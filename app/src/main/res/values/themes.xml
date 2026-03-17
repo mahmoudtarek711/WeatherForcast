@@ -10,4 +10,9 @@
 
         <item name="postSplashScreenTheme">@style/Theme.WeatherForcast</item>
     </style>
+
+    <style name="Theme.Alarm" parent="Theme.WeatherForcast">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
 </resources>

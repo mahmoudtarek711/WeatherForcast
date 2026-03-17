@@ -2,8 +2,12 @@ package com.example.weatherforcast.ui.screens
 
 import android.app.NotificationManager
 import android.content.Context
+import android.media.MediaPlayer
+import android.media.RingtoneManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -34,34 +38,55 @@ import com.example.weatherforcast.ui.theme.*
 
 class AlarmActivity : AppCompatActivity() {
 
+    private var mediaPlayer: MediaPlayer? = null
+
+    @RequiresApi(Build.VERSION_CODES.O_MR1)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setShowWhenLocked(true)
         setTurnScreenOn(true)
 
-        val description = intent.getStringExtra("WEATHER_DESC")
+        val description = intent.getStringExtra("WEATHER_DESC") ?: ""
         val iconCode = intent.getStringExtra("ICON_CODE")
+
+        // 🔥 REMOVE notification immediately
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.cancel(1001)
+
+        // 🔊 PLAY SOUND (MAIN FIX)
+        val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+
+        mediaPlayer = MediaPlayer().apply {
+            setDataSource(this@AlarmActivity, alarmUri)
+            isLooping = true
+            prepare()
+            start()
+        }
 
         setContent {
             AlarmScreen(
-                description = description ?: "",
-                iconCode,
+                description = description,
+                iconCode = iconCode,
                 onDismiss = {
-                    val notificationId = intent.getIntExtra("NOTIFICATION_ID", -1)
-
-                    val notificationManager =
-                        getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-                    if (notificationId != -1) {
-                        notificationManager.cancel(notificationId)
-                    }
-
+                    stopAlarm()
                     finish()
                 }
             )
         }
     }
+
+    private fun stopAlarm() {
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
+        mediaPlayer = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopAlarm()
+    }
+
 }
 
 @Composable

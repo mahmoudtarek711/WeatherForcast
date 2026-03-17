@@ -16,5 +16,5 @@ sealed class Screen(val route: String, val titleResId: Int, val icon: ImageVecto
     object Home : Screen("home", R.string.today, Icons.Default.Home)
     object Favorites : Screen("favorites", R.string.favorites, Icons.Default.FavoriteBorder)
     object Alerts : Screen("alerts", R.string.alerts, Icons.Default.Notifications)
-    object Settings : Screen("settings", R.string.language_title, Icons.Default.Settings)
+    object Settings : Screen("settings", R.string.settings, Icons.Default.Settings)
 }
